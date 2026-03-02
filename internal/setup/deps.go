@@ -40,6 +40,10 @@ func (w *Wizard) ensureOptional(bin string) {
 		return
 	}
 	fmt.Fprintf(w.Stdout, "[optional-missing] %s\n", bin)
+	if w.Options.NonInteractive {
+		fmt.Fprintf(w.Stdout, "Skipping optional %s install in non-interactive mode.\n", bin)
+		return
+	}
 	ok, err := w.confirm(fmt.Sprintf("Install optional dependency %s now?", bin))
 	if err != nil || !ok {
 		return
