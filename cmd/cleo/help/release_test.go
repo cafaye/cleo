@@ -13,6 +13,7 @@ func TestPrintRelease(t *testing.T) {
 		"usage: cleo release <command>",
 		"plan --version",
 		"publish --version",
+		"go <command>",
 		"help [command]",
 	)
 }
@@ -34,4 +35,13 @@ func TestPrintReleaseCommandUnknown(t *testing.T) {
 	if ok {
 		t.Fatal("expected unknown command")
 	}
+}
+
+func TestPrintReleaseGo(t *testing.T) {
+	var out bytes.Buffer
+	PrintReleaseGo(&out)
+	testContainsAll(t, out.String(),
+		"usage: cleo release go <command>",
+		"publish --version",
+	)
 }

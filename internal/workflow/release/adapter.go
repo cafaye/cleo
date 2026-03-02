@@ -2,19 +2,23 @@ package release
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/cafaye/cleo/internal/ghcli"
+	releaseruntime "github.com/cafaye/cleo/internal/workflow/release/runtime"
 )
 
 type Adapter struct {
 	gh   *ghcli.Client
 	repo string
+	root string
 }
 
 func NewAdapter(owner, repo string) *Adapter {
-	return &Adapter{gh: ghcli.New(), repo: owner + "/" + repo}
+	root, _ := os.Getwd()
+	return &Adapter{gh: ghcli.New(), repo: owner + "/" + repo, root: root}
 }
 
 func (a *Adapter) CheckGitClean() error {
@@ -58,13 +62,43 @@ func (a *Adapter) Publish(version string, draft bool, generateNotes bool) error 
 	if generateNotes {
 		args = append(args, "--generate-notes")
 	}
+	if releaseruntime.DetectGo(a.root) {
+		assets, err := releaseruntime.BuildGoReleaseArtifacts(version)
+		if err != nil {
+			return err
+		}
+		args = append(args, assets...)
+	}
 	_, err := a.gh.Run(args...)
 	return err
 }
 
 func (a *Adapter) Verify(version string) error {
-	_, err := a.gh.Run("release", "view", version, "--repo", a.repo, "--json", "tagName,url,isDraft,isPrerelease")
-	return err
+	out, err := a.gh.Run("release", "view", version, "--repo", a.repo, "--json", "tagName,url,isDraft,isPrerelease,assets")
+	if err != nil {
+		return err
+	}
+	if !releaseruntime.DetectGo(a.root) {
+		return nil
+	}
+	var payload struct {
+		Assets []struct {
+			Name string `json:"name"`
+		} `json:"assets"`
+	}
+	if err := ghcli.DecodeJSON(out, &payload); err != nil {
+		return err
+	}
+	have := map[string]bool{}
+	for _, a := range payload.Assets {
+		have[strings.TrimSpace(a.Name)] = true
+	}
+	for _, name := range releaseruntime.ExpectedGoAssetNames(version) {
+		if !have[name] {
+			return fmt.Errorf("missing release asset: %s", name)
+		}
+	}
+	return nil
 }
 
 func runLocal(name string, args ...string) (string, error) {

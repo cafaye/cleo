@@ -20,6 +20,12 @@ cleo release cut --version vX.Y.Z
 cleo release publish --version vX.Y.Z --final
 ```
 
+Explicit Go flow (equivalent in Go repos):
+
+```bash
+cleo release go publish --version vX.Y.Z --final
+```
+
 4. Verify
 
 ```bash
@@ -31,3 +37,4 @@ cleo release verify --version vX.Y.Z
 - Run from a clean working tree.
 - Version must use configured prefix (`release.tag_prefix`, default `v`).
 - `publish` supports `--draft` and `--no-notes`.
+- In Go repositories (`go.mod`), `publish` auto-builds multi-arch tarballs and `checksums.txt`.

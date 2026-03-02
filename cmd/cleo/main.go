@@ -103,7 +103,14 @@ func runRelease(args []string) int {
 		help.PrintRelease(os.Stdout)
 		return 0
 	}
+	if args[2] == "go" {
+		return runReleaseGo(args)
+	}
 	if args[2] == "help" || args[2] == "--help" || args[2] == "-h" {
+		if len(args) > 3 && args[3] == "go" {
+			help.PrintReleaseGo(os.Stdout)
+			return 0
+		}
 		if len(args) > 3 && !help.PrintReleaseCommand(os.Stdout, args[3]) {
 			fmt.Fprintf(os.Stderr, "unknown release command: %s\n\n", args[3])
 			help.PrintRelease(os.Stderr)
@@ -124,6 +131,31 @@ func runRelease(args []string) int {
 		workflowrelease.NewOptions(cfg),
 	)
 	if err := cmd.Execute(args[2], args[3:]); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	return 0
+}
+
+func runReleaseGo(args []string) int {
+	if len(args) < 4 {
+		help.PrintReleaseGo(os.Stdout)
+		return 0
+	}
+	if args[3] == "help" || args[3] == "--help" || args[3] == "-h" {
+		help.PrintReleaseGo(os.Stdout)
+		return 0
+	}
+	cfg, err := config.Load("cleo.yml")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "config error: %v\n", err)
+		return 1
+	}
+	cmd := workflowrelease.New(
+		workflowrelease.NewAdapter(cfg.GitHub.Owner, cfg.GitHub.Repo),
+		workflowrelease.NewOptions(cfg),
+	)
+	if err := cmd.Execute(args[3], args[4:]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}

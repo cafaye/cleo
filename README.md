@@ -143,10 +143,12 @@ cleo pr batch [--from <pr>] [--no-watch] [--no-run] [--no-rebase]
 
 ```bash
 cleo release help
+cleo release go help
 cleo release plan --version v0.1.0
 cleo release cut --version v0.1.0
 cleo release publish --version v0.1.0 [--draft|--final] [--no-notes]
 cleo release verify --version v0.1.0
+cleo release go publish --version v0.1.0 [--draft|--final] [--no-notes]
 ```
 
 Release workflow follows the same deterministic pattern:
@@ -155,6 +157,13 @@ Release workflow follows the same deterministic pattern:
 2. `cut` creates and pushes the tag.
 3. `publish` creates the GitHub release.
 4. `verify` confirms release visibility.
+
+For Go repositories (`go.mod` present), `publish` automatically:
+
+- builds `linux/darwin` binaries for `amd64/arm64`
+- packages tarballs
+- generates `checksums.txt`
+- uploads artifacts to the GitHub release
 
 ## Tests
 
