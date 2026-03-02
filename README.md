@@ -85,3 +85,15 @@ cleo pr batch [--from <pr>] [--no-watch] [--no-run] [--no-rebase]
 ```bash
 go test ./...
 ```
+
+## Uninstall
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cafaye/cleo/master/uninstall.sh | bash
+```
+
+Remove Go toolchain and logs too:
+
+```bash
+REMOVE_GO=1 REMOVE_LOGS=1 NON_INTERACTIVE=1 curl -fsSL https://raw.githubusercontent.com/cafaye/cleo/master/uninstall.sh | bash
+```

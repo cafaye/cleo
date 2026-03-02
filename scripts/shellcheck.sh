@@ -7,4 +7,4 @@ export STEP
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
 require_command shellcheck "Install shellcheck and rerun make shellcheck."
-run_logged "Fix shellcheck findings in scripts and hooks." shellcheck scripts/*.sh .githooks/post-push install.sh
+run_logged "Fix shellcheck findings in scripts and hooks." shellcheck scripts/*.sh .githooks/post-push install.sh uninstall.sh
