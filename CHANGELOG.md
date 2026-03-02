@@ -6,12 +6,35 @@ All notable changes to this project will be documented in this file.
 
 ### Summary
 
-- Release workflow now requires sectioned changelog input for agent-authored notes.
+- Document upcoming changes here before the next release.
+
+### Highlights
+
+- Add highlights for unreleased work.
+
+### Breaking Changes
+
+- None.
+
+### Migration Notes
+
+- None.
+
+### Verification
+
+- Add verification commands/results for unreleased work.
+
+## [v0.1.2]
+
+### Summary
+
+- Improved release authoring ergonomics so agents can always produce structured notes.
 
 ### Highlights
 
 - Added release inspection commands: `cleo release list` and `cleo release latest`.
-- Enforced structured release notes sourced from changelog entries.
+- Added warning-first fallback behavior when changelog note sections are missing.
+- Added publish-time release note override flags (`--summary`, `--highlights`, `--breaking`, `--migration`, `--verification`).
 
 ### Breaking Changes
 
@@ -24,6 +47,7 @@ All notable changes to this project will be documented in this file.
 ### Verification
 
 - `go test ./...`
+- `cleo release help publish`
 
 ## [v0.1.1]
 
