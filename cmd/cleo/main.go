@@ -57,60 +57,96 @@ func run(args []string) int {
 func runPR(svc *pr.Service, cmd string, args []string) error {
 	switch cmd {
 	case "status":
-		if err := requireLen(args, 1, "cleo pr status <pr>"); err != nil {
-			return err
-		}
-		return svc.Status(args[0])
+		return runStatus(svc, args)
 	case "gate":
-		if err := requireLen(args, 1, "cleo pr gate <pr>"); err != nil {
-			return err
-		}
-		return svc.Gate(args[0])
+		return runGate(svc, args)
 	case "checks":
-		if err := requireLen(args, 1, "cleo pr checks <pr>"); err != nil {
-			return err
-		}
-		return svc.Checks(args[0])
+		return runChecks(svc, args)
 	case "watch":
-		if err := requireLen(args, 1, "cleo pr watch <pr|sha>"); err != nil {
-			return err
-		}
-		return svc.Watch(args[0])
+		return runWatch(svc, args)
 	case "run":
-		if err := requireLen(args, 1, "cleo pr run <pr> [--dry]"); err != nil {
-			return err
-		}
-		return svc.Run(args[0], hasFlag(args[1:], "--dry"))
+		return runRun(svc, args)
 	case "merge":
-		if err := requireLen(args, 1, "cleo pr merge <pr> [--no-watch] [--no-run] [--no-rebase] [--delete-branch]"); err != nil {
-			return err
-		}
-		return svc.Merge(args[0], hasFlag(args[1:], "--no-watch"), hasFlag(args[1:], "--no-run"), hasFlag(args[1:], "--no-rebase"), hasFlag(args[1:], "--delete-branch"))
+		return runMerge(svc, args)
 	case "batch":
-		start, err := parseFrom(args)
-		if err != nil {
-			return err
-		}
-		return svc.Batch(start, hasFlag(args, "--no-watch"), hasFlag(args, "--no-run"), hasFlag(args, "--no-rebase"))
+		return runBatch(svc, args)
 	case "rebase":
-		if err := requireLen(args, 1, "cleo pr rebase <pr>"); err != nil {
-			return err
-		}
-		return svc.Rebase(args[0])
+		return runRebase(svc, args)
 	case "retarget":
-		if err := requireLen(args, 3, "cleo pr retarget <pr> --base <branch>"); err != nil {
-			return err
-		}
-		base := flagValue(args[1:], "--base")
-		if strings.TrimSpace(base) == "" {
-			return fmt.Errorf("--base is required")
-		}
-		return svc.Retarget(args[0], base)
+		return runRetarget(svc, args)
 	case "create":
 		return runCreate(svc, args)
 	default:
 		return fmt.Errorf("unknown pr command: %s", cmd)
 	}
+}
+
+func runStatus(svc *pr.Service, args []string) error {
+	if err := requireLen(args, 1, "cleo pr status <pr>"); err != nil {
+		return err
+	}
+	return svc.Status(args[0])
+}
+
+func runGate(svc *pr.Service, args []string) error {
+	if err := requireLen(args, 1, "cleo pr gate <pr>"); err != nil {
+		return err
+	}
+	return svc.Gate(args[0])
+}
+
+func runChecks(svc *pr.Service, args []string) error {
+	if err := requireLen(args, 1, "cleo pr checks <pr>"); err != nil {
+		return err
+	}
+	return svc.Checks(args[0])
+}
+
+func runWatch(svc *pr.Service, args []string) error {
+	if err := requireLen(args, 1, "cleo pr watch <pr|sha>"); err != nil {
+		return err
+	}
+	return svc.Watch(args[0])
+}
+
+func runRun(svc *pr.Service, args []string) error {
+	if err := requireLen(args, 1, "cleo pr run <pr> [--dry]"); err != nil {
+		return err
+	}
+	return svc.Run(args[0], hasFlag(args[1:], "--dry"))
+}
+
+func runMerge(svc *pr.Service, args []string) error {
+	if err := requireLen(args, 1, "cleo pr merge <pr> [--no-watch] [--no-run] [--no-rebase] [--delete-branch]"); err != nil {
+		return err
+	}
+	return svc.Merge(args[0], hasFlag(args[1:], "--no-watch"), hasFlag(args[1:], "--no-run"), hasFlag(args[1:], "--no-rebase"), hasFlag(args[1:], "--delete-branch"))
+}
+
+func runBatch(svc *pr.Service, args []string) error {
+	start, err := parseFrom(args)
+	if err != nil {
+		return err
+	}
+	return svc.Batch(start, hasFlag(args, "--no-watch"), hasFlag(args, "--no-run"), hasFlag(args, "--no-rebase"))
+}
+
+func runRebase(svc *pr.Service, args []string) error {
+	if err := requireLen(args, 1, "cleo pr rebase <pr>"); err != nil {
+		return err
+	}
+	return svc.Rebase(args[0])
+}
+
+func runRetarget(svc *pr.Service, args []string) error {
+	if err := requireLen(args, 3, "cleo pr retarget <pr> --base <branch>"); err != nil {
+		return err
+	}
+	base := flagValue(args[1:], "--base")
+	if strings.TrimSpace(base) == "" {
+		return fmt.Errorf("--base is required")
+	}
+	return svc.Retarget(args[0], base)
 }
 
 func runCreate(svc *pr.Service, args []string) error {

@@ -42,35 +42,51 @@ func (s *Service) Create(title, summary, why, what, test, risk, rollback, owner 
 }
 
 func Render(summary, why, what, test, risk, rollback, owner string, cmds []string) string {
-	if summary == "" {
-		summary = "TBD"
+	fields := withDefaults(summary, why, what, test, risk, rollback, owner)
+	return fmt.Sprintf(prBodyTemplate, fields.summary, fields.why, fields.what, fields.test, fields.risk, fields.rollback, fields.owner, renderCommandLines(cmds))
+}
+
+type prFields struct {
+	summary  string
+	why      string
+	what     string
+	test     string
+	risk     string
+	rollback string
+	owner    string
+}
+
+func withDefaults(summary, why, what, test, risk, rollback, owner string) prFields {
+	return prFields{
+		summary:  first(summary, "TBD"),
+		why:      first(why, "TBD"),
+		what:     first(what, "- TBD"),
+		test:     first(test, "- TBD"),
+		risk:     first(risk, "Low"),
+		rollback: first(rollback, "Revert this PR"),
+		owner:    first(owner, "TBD"),
 	}
-	if why == "" {
-		why = "TBD"
+}
+
+func renderCommandLines(cmds []string) string {
+	if len(cmds) == 0 {
+		return "- `None`"
 	}
-	if what == "" {
-		what = "- TBD"
+	lines := make([]string, 0, len(cmds))
+	for _, cmd := range cmds {
+		lines = append(lines, "- `"+cmd+"`")
 	}
-	if test == "" {
-		test = "- TBD"
+	return strings.Join(lines, "\n")
+}
+
+func first(value, fallback string) string {
+	if strings.TrimSpace(value) == "" {
+		return fallback
 	}
-	if risk == "" {
-		risk = "Low"
-	}
-	if rollback == "" {
-		rollback = "Revert this PR"
-	}
-	if owner == "" {
-		owner = "TBD"
-	}
-	lines := []string{"- `None`"}
-	if len(cmds) > 0 {
-		lines = []string{}
-		for _, c := range cmds {
-			lines = append(lines, "- `"+c+"`")
-		}
-	}
-	return fmt.Sprintf(`## Summary
+	return value
+}
+
+const prBodyTemplate = `## Summary
 %s
 
 ## Why
@@ -100,5 +116,4 @@ func Render(summary, why, what, test, risk, rollback, owner string, cmds []strin
 <!-- post-merge-commands:start -->
 %s
 <!-- post-merge-commands:end -->
-`, summary, why, what, test, risk, rollback, owner, strings.Join(lines, "\n"))
-}
+`

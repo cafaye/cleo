@@ -33,13 +33,16 @@ func (w *Wizard) writeConfig() error {
 }
 
 func defaultConfig(owner, repo string) string {
-	return fmt.Sprintf(`version: 1
+	return fmt.Sprintf(defaultConfigTemplate, owner, repo)
+}
+
+const defaultConfigTemplate = `version: 1
 
 github:
   owner: %s
   repo: %s
   host: github.com
-  base_branch: master
+  base_branch: main
   merge_method: merge
   delete_branch_on_merge: false
 
@@ -61,7 +64,7 @@ pr:
   deploy_watch:
     enabled: true
     workflow: Deploy to Production
-    branch: master
+    branch: main
     timeout_seconds: 2700
     poll_interval_seconds: 10
 
@@ -84,5 +87,4 @@ pr:
 
 safety:
   require_explicit_apply: true
-`, owner, repo)
-}
+`
