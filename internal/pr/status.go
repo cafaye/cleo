@@ -22,14 +22,21 @@ func (s *Service) Checks(pr string) error {
 		return err
 	}
 	if len(v.StatusCheckRollup) == 0 {
-		fmt.Println("No status checks reported.")
+		fmt.Printf("No status checks reported for PR #%d yet.\n", v.Number)
+		fmt.Printf("Try `cleo pr watch %d` and retry.\n", v.Number)
 		return nil
 	}
+	e := s.evaluateChecks(v)
+	fmt.Printf("Checks summary: pending=%d failed=%d total=%d\n", len(e.pending), len(e.failed), len(v.StatusCheckRollup))
 	for _, c := range v.StatusCheckRollup {
-		fmt.Printf("- %s/%s status=%s conclusion=%s\n", valueOr(c.WorkflowName, "check"), valueOr(c.Name, "unknown"), valueOr(c.Status, "UNKNOWN"), valueOr(c.Conclusion, "UNKNOWN"))
+		fmt.Printf("- %s status=%s conclusion=%s\n", checkLabel(c), valueOr(c.Status, "UNKNOWN"), valueOr(c.Conclusion, "UNKNOWN"))
 		if c.URL != "" {
 			fmt.Printf("  %s\n", c.URL)
 		}
+		fmt.Println("  trace: check-run-id unavailable via current rollup API; use URL for traceability.")
+	}
+	if len(e.pending) > 0 {
+		fmt.Printf("Pending checks detected. Run `cleo pr watch %d`.\n", v.Number)
 	}
 	return nil
 }

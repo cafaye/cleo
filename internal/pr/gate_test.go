@@ -28,6 +28,31 @@ func TestGateFailsForDraft(t *testing.T) {
 	}
 }
 
+func TestGateFailsForPendingChecks(t *testing.T) {
+	cfg := testConfig()
+	f := newFakeRunner()
+	f.when([]string{"pr", "view", "9", "--repo", "cafaye/cleo", "--json", "number,title,url,state,isDraft,mergeable,reviewDecision,baseRefName,headRefName,statusCheckRollup"}, `{"number":9,"title":"T","url":"u","state":"OPEN","isDraft":false,"mergeable":"MERGEABLE","reviewDecision":"APPROVED","baseRefName":"master","headRefName":"feat","statusCheckRollup":[{"name":"ci","workflowName":"CI","status":"IN_PROGRESS","conclusion":"","url":"https://example/check"}]}`)
+	svc := NewServiceWithRunner(cfg, f)
+	err := svc.Gate("9")
+	if err == nil || !strings.Contains(err.Error(), "pending checks") {
+		t.Fatalf("expected pending checks error, got %v", err)
+	}
+	if !strings.Contains(err.Error(), "cleo pr watch 9") {
+		t.Fatalf("expected watch hint in error, got %v", err)
+	}
+}
+
+func TestGateFailsWhenNoChecksReported(t *testing.T) {
+	cfg := testConfig()
+	f := newFakeRunner()
+	f.when([]string{"pr", "view", "10", "--repo", "cafaye/cleo", "--json", "number,title,url,state,isDraft,mergeable,reviewDecision,baseRefName,headRefName,statusCheckRollup"}, `{"number":10,"title":"T","url":"u","state":"OPEN","isDraft":false,"mergeable":"MERGEABLE","reviewDecision":"APPROVED","baseRefName":"master","headRefName":"feat","statusCheckRollup":[]}`)
+	svc := NewServiceWithRunner(cfg, f)
+	err := svc.Gate("10")
+	if err == nil || !strings.Contains(err.Error(), "no status checks reported") {
+		t.Fatalf("expected no checks error, got %v", err)
+	}
+}
+
 func testConfig() *config.Config {
 	cfg := &config.Config{}
 	cfg.Version = 1

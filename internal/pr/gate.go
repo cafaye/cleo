@@ -30,22 +30,15 @@ func (s *Service) Gate(pr string) error {
 }
 
 func (s *Service) checkRollup(v *PRView) error {
-	bad := []string{}
-	for _, c := range v.StatusCheckRollup {
-		if ignored(c.Name, s.cfg.PR.Checks.Ignore) {
-			continue
-		}
-		if c.Status != "COMPLETED" {
-			bad = append(bad, fmt.Sprintf("%s/%s status=%s", valueOr(c.WorkflowName, "check"), valueOr(c.Name, "unknown"), c.Status))
-			continue
-		}
-		okConclusion := c.Conclusion == "SUCCESS" || (s.cfg.PR.Checks.TreatNeutralAsPass && c.Conclusion == "NEUTRAL")
-		if !okConclusion {
-			bad = append(bad, fmt.Sprintf("%s/%s conclusion=%s", valueOr(c.WorkflowName, "check"), valueOr(c.Name, "unknown"), c.Conclusion))
-		}
+	if len(v.StatusCheckRollup) == 0 {
+		return fmt.Errorf("PR #%d has no status checks reported yet. Re-run `cleo pr checks %d` and `cleo pr watch %d`", v.Number, v.Number, v.Number)
 	}
-	if len(bad) > 0 {
-		return fmt.Errorf("PR #%d has non-green checks:\n- %s", v.Number, strings.Join(bad, "\n- "))
+	e := s.evaluateChecks(v)
+	if len(e.pending) > 0 {
+		return fmt.Errorf("PR #%d has pending checks:\n- %s\nRun `cleo pr watch %d` and retry gate.", v.Number, strings.Join(e.pending, "\n- "), v.Number)
+	}
+	if len(e.failed) > 0 {
+		return fmt.Errorf("PR #%d has non-green checks:\n- %s", v.Number, strings.Join(e.failed, "\n- "))
 	}
 	return nil
 }
