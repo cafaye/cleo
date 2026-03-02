@@ -1,6 +1,4 @@
-# AGENTS.md Template
-
-Copy this into your repository `AGENTS.md` and adjust names/paths.
+# AGENTS.md
 
 ## Workflow Rules
 
