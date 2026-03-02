@@ -22,7 +22,7 @@ func TestWorkFromBaseBranchCreatesTaskBranch(t *testing.T) {
 	current := "master"
 	adapter.runLocalFn = fakeGitRunner(&current)
 
-	text, err := adapter.Work(id)
+	text, err := adapter.Work(id, WorkOptions{})
 	if err != nil {
 		t.Fatalf("Work error: %v", err)
 	}
@@ -49,7 +49,7 @@ func TestWorkFromFeatureBranchKeepsCurrentBranch(t *testing.T) {
 	current := "feature/checkout-fix"
 	adapter.runLocalFn = fakeGitRunner(&current)
 
-	text, err := adapter.Work(id)
+	text, err := adapter.Work(id, WorkOptions{})
 	if err != nil {
 		t.Fatalf("Work error: %v", err)
 	}
@@ -62,6 +62,53 @@ func TestWorkFromFeatureBranchKeepsCurrentBranch(t *testing.T) {
 	}
 	if task.WorkBranch != "feature/checkout-fix" {
 		t.Fatalf("expected branch to remain feature branch, got %q", task.WorkBranch)
+	}
+}
+
+func TestWorkWithForceNewBranchFromFeatureBranchCreatesTaskBranch(t *testing.T) {
+	store := openTestStore(t)
+	defer func() { _ = store.Close() }()
+	id := seedTask(t, store)
+
+	cfg := &config.Config{}
+	cfg.GitHub.BaseBranch = "master"
+	adapter := NewAdapter(store, cfg)
+	current := "feature/checkout-fix"
+	adapter.runLocalFn = fakeGitRunner(&current)
+
+	text, err := adapter.Work(id, WorkOptions{ForceNewBranch: true})
+	if err != nil {
+		t.Fatalf("Work error: %v", err)
+	}
+	if !strings.Contains(text, "Work lane: new-branch") {
+		t.Fatalf("expected new-branch lane, got %q", text)
+	}
+	task, err := store.Task(context.Background(), id)
+	if err != nil {
+		t.Fatalf("task lookup error: %v", err)
+	}
+	if task.WorkBranch == "feature/checkout-fix" {
+		t.Fatalf("expected branch switch for force new branch, got %q", task.WorkBranch)
+	}
+}
+
+func TestWorkWithForceInPlaceOnBaseBranchFails(t *testing.T) {
+	store := openTestStore(t)
+	defer func() { _ = store.Close() }()
+	id := seedTask(t, store)
+
+	cfg := &config.Config{}
+	cfg.GitHub.BaseBranch = "master"
+	adapter := NewAdapter(store, cfg)
+	current := "master"
+	adapter.runLocalFn = fakeGitRunner(&current)
+
+	_, err := adapter.Work(id, WorkOptions{ForceInPlace: true})
+	if err == nil {
+		t.Fatal("expected force in-place to fail on base branch")
+	}
+	if !strings.Contains(err.Error(), "--in-place cannot be used on base branch") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 

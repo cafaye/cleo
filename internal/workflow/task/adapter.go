@@ -60,7 +60,7 @@ func (a *Adapter) Close(id int64) error {
 	return a.store.UpdateTaskStatus(context.Background(), id, "closed", a.now())
 }
 
-func (a *Adapter) Work(id int64) (string, error) {
+func (a *Adapter) Work(id int64, opts WorkOptions) (string, error) {
 	task, err := a.store.Task(context.Background(), id)
 	if err != nil {
 		return "", err
@@ -77,9 +77,24 @@ func (a *Adapter) Work(id int64) (string, error) {
 		return "", fmt.Errorf("cannot determine current branch")
 	}
 
+	onBaseBranch := currentBranch == strings.TrimSpace(a.cfg.GitHub.BaseBranch)
+	if opts.ForceNewBranch && opts.ForceInPlace {
+		return "", fmt.Errorf("--new-branch and --in-place cannot be used together")
+	}
+	if opts.ForceInPlace && onBaseBranch {
+		return "", fmt.Errorf("--in-place cannot be used on base branch %q", strings.TrimSpace(a.cfg.GitHub.BaseBranch))
+	}
+
 	workBranch := currentBranch
 	lane := "in-place"
-	if currentBranch == strings.TrimSpace(a.cfg.GitHub.BaseBranch) {
+	useNewBranch := onBaseBranch
+	if opts.ForceNewBranch {
+		useNewBranch = true
+	}
+	if opts.ForceInPlace {
+		useNewBranch = false
+	}
+	if useNewBranch {
 		workBranch = branchForTask(task.ID, task.Title)
 		if _, err := a.runLocalFn("git", "checkout", "-b", workBranch); err != nil {
 			if _, checkoutErr := a.runLocalFn("git", "checkout", workBranch); checkoutErr != nil {

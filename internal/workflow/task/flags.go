@@ -25,3 +25,12 @@ func int64Flag(args []string, key string) (int64, error) {
 	}
 	return id, nil
 }
+
+func hasFlag(args []string, key string) bool {
+	for _, a := range args {
+		if a == key {
+			return true
+		}
+	}
+	return false
+}

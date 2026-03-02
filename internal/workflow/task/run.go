@@ -47,7 +47,11 @@ func Execute(a Actions, in Input) (Result, error) {
 		if err != nil {
 			return Result{}, err
 		}
-		text, err := a.Work(id)
+		opts := WorkOptions{
+			ForceNewBranch: hasFlag(in.Args, "--new-branch"),
+			ForceInPlace:   hasFlag(in.Args, "--in-place"),
+		}
+		text, err := a.Work(id, opts)
 		if err != nil {
 			return Result{}, err
 		}

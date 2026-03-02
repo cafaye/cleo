@@ -23,7 +23,10 @@ func BuildPlan(in Input) (Plan, error) {
 		return Plan{Name: "close", Description: "Close task"}, nil
 	case "work":
 		if flagValue(in.Args, "--id") == "" {
-			return Plan{}, fmt.Errorf("usage: cleo task work --id <task-id>")
+			return Plan{}, fmt.Errorf("usage: cleo task work --id <task-id> [--new-branch|--in-place]")
+		}
+		if hasFlag(in.Args, "--new-branch") && hasFlag(in.Args, "--in-place") {
+			return Plan{}, fmt.Errorf("--new-branch and --in-place cannot be used together")
 		}
 		return Plan{Name: "work", Description: "Start work lane for task"}, nil
 	default:

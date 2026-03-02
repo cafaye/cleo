@@ -20,10 +20,15 @@ type Verification struct {
 	Reason  string
 }
 
+type WorkOptions struct {
+	ForceNewBranch bool
+	ForceInPlace   bool
+}
+
 type Actions interface {
 	List(status string) (string, error)
 	Show(id int64) (string, error)
 	Claim(id int64) error
 	Close(id int64) error
-	Work(id int64) (string, error)
+	Work(id int64, opts WorkOptions) (string, error)
 }
