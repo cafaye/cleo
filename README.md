@@ -2,6 +2,15 @@
 
 Deterministic CLI for GitHub PR operations.
 
+## How Setup Works
+
+`cleo` has two setup layers:
+
+1. Global setup (one-time per machine): install `cleo` binary and dependencies.
+2. Repository setup (one-time per repo): create/update that repo's `cleo.yml`.
+
+After global install, you can use the same `cleo` command in any repository. You only run `cleo setup` again when entering a new repo for the first time.
+
 ## One-Command Install
 
 ```bash
@@ -12,6 +21,28 @@ Non-interactive mode:
 
 ```bash
 NON_INTERACTIVE=1 curl -fsSL https://raw.githubusercontent.com/cafaye/cleo/master/install.sh | bash
+```
+
+## Quick Start Across Repositories
+
+Install once:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cafaye/cleo/master/install.sh | bash
+```
+
+In each repository (once):
+
+```bash
+cd /path/to/repo
+cleo setup
+```
+
+Use normally after that:
+
+```bash
+cleo pr status <pr>
+cleo pr doctor
 ```
 
 ## One-Command Uninstall
@@ -31,7 +62,7 @@ NON_INTERACTIVE=1 SCAN_ROOTS="$HOME/Code,$HOME/work" curl -fsSL https://raw.gith
 
 ## Setup Wizard
 
-Run a guided setup with dependency checks, optional installs, GitHub auth, and `cleo.yml` generation:
+Run a guided per-repo setup with dependency checks, optional installs, GitHub auth, and `cleo.yml` generation:
 
 ```bash
 cleo setup
