@@ -75,6 +75,8 @@ Non-interactive update:
 cleo update --non-interactive
 ```
 
+`cleo update` checks latest GitHub release first; if already current, it exits quickly with an up-to-date message.
+
 ## One-Command Uninstall
 
 ```bash

@@ -44,3 +44,15 @@ func TestFindAssetURL(t *testing.T) {
 		t.Fatal("expected url")
 	}
 }
+
+func TestShouldSkipUpdate(t *testing.T) {
+	if !shouldSkipUpdate("v1.2.3", "v1.2.3") {
+		t.Fatal("expected skip for matching stable versions")
+	}
+	if shouldSkipUpdate("dev", "v1.2.3") {
+		t.Fatal("dev build should not skip updates")
+	}
+	if shouldSkipUpdate("", "v1.2.3") {
+		t.Fatal("empty current version should not skip updates")
+	}
+}

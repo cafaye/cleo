@@ -36,11 +36,23 @@ func NewReleaseUpdater() *ReleaseUpdater {
 	}
 }
 
-func (u *ReleaseUpdater) UpdateLatest() error {
+func (u *ReleaseUpdater) UpdateLatest(current string) error {
+	fmt.Println("Checking latest release...")
 	rel, err := u.latestRelease()
 	if err != nil {
 		return err
 	}
+	showCurrent := current
+	if showCurrent == "" || showCurrent == "dev" {
+		showCurrent = "unknown"
+	}
+	fmt.Printf("Current version: %s\n", showCurrent)
+	fmt.Printf("Latest version: %s\n", rel.TagName)
+	if shouldSkipUpdate(current, rel.TagName) {
+		fmt.Printf("Already up to date: %s\n", current)
+		return nil
+	}
+	fmt.Printf("Updating to %s (no action required)...\n", rel.TagName)
 	asset, err := assetName(rel.TagName)
 	if err != nil {
 		return err
@@ -53,6 +65,7 @@ func (u *ReleaseUpdater) UpdateLatest() error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Downloading %s...\n", asset)
 	tmpDir, err := os.MkdirTemp("", "cleo-update-*")
 	if err != nil {
 		return err
@@ -63,9 +76,11 @@ func (u *ReleaseUpdater) UpdateLatest() error {
 		return err
 	}
 	checksumsPath := filepath.Join(tmpDir, "checksums.txt")
+	fmt.Println("Downloading checksums...")
 	if err := u.download(checksumsURL, checksumsPath); err != nil {
 		return err
 	}
+	fmt.Println("Verifying checksums...")
 	if err := verifyChecksum(archivePath, checksumsPath, asset); err != nil {
 		return err
 	}
@@ -74,16 +89,23 @@ func (u *ReleaseUpdater) UpdateLatest() error {
 		return err
 	}
 	newBin := filepath.Join(tmpDir, "cleo")
+	fmt.Println("Extracting binary...")
 	if err := extractBinary(archivePath, newBin); err != nil {
 		return err
 	}
 	if err := os.Chmod(newBin, 0o755); err != nil {
 		return err
 	}
+	fmt.Printf("Installing update to %s...\n", exePath)
 	if err := os.Rename(newBin, exePath); err != nil {
 		return fmt.Errorf("replace %s: %w", exePath, err)
 	}
+	fmt.Printf("Update complete: %s\n", rel.TagName)
 	return nil
+}
+
+func shouldSkipUpdate(current, latest string) bool {
+	return current != "" && current != "dev" && current == latest
 }
 
 func (u *ReleaseUpdater) latestRelease() (*githubRelease, error) {
