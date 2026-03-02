@@ -43,6 +43,12 @@ make ci-status
 make install-git-hooks
 ```
 
+Logs default to `~/.cleo/logs/<repo>`. Override per run with:
+
+```bash
+LOG_DIR=logs make quality
+```
+
 ## PR Commands
 
 ```bash

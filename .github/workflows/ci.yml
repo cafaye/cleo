@@ -18,6 +18,8 @@ jobs:
   fast-fail:
     name: fast-fail
     runs-on: ubuntu-latest
+    env:
+      LOG_DIR: logs
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,13 +44,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fast-fail-artifacts
-          path: artifacts
+          path: logs
           if-no-files-found: ignore
 
   unit-test:
     name: unit-test
     needs: fast-fail
     runs-on: ubuntu-latest
+    env:
+      LOG_DIR: logs
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -67,13 +71,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-artifacts
-          path: artifacts
+          path: logs
           if-no-files-found: ignore
 
   smoke-test:
     name: smoke-test
     needs: fast-fail
     runs-on: ubuntu-latest
+    env:
+      LOG_DIR: logs
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -92,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: smoke-test-artifacts
-          path: artifacts
+          path: logs
           if-no-files-found: ignore
 
   quality:

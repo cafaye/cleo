@@ -11,8 +11,8 @@ require_command go "Install Go and rerun make fmt."
 go_file_list="$(mktemp)"
 find . -type f -name '*.go' -not -path './.git/*' | LC_ALL=C sort >"${go_file_list}"
 trap 'rm -f "${go_file_list}"' EXIT
-log_file="${ARTIFACT_DIR}/${STEP}.log"
-ensure_artifact_dir
+log_file="${LOG_DIR}/${STEP}.log"
+ensure_log_dir
 
 if [[ ! -s "${go_file_list}" ]]; then
   : >"${log_file}"

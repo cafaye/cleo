@@ -6,11 +6,19 @@ if [[ -z "${STEP:-}" ]]; then
   exit 1
 fi
 
-ARTIFACT_DIR="${ARTIFACT_DIR:-artifacts}"
 EVENT_VERSION="1"
 
-ensure_artifact_dir() {
-  mkdir -p "${ARTIFACT_DIR}"
+default_log_dir() {
+  local repo_root repo_name
+  repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+  repo_name="$(basename "${repo_root}")"
+  printf '%s/.cleo/logs/%s\n' "${HOME}" "${repo_name}"
+}
+
+LOG_DIR="${LOG_DIR:-$(default_log_dir)}"
+
+ensure_log_dir() {
+  mkdir -p "${LOG_DIR}"
 }
 
 event() {
@@ -34,8 +42,8 @@ run_logged() {
   local hint="$1"
   shift
 
-  local log_file="${ARTIFACT_DIR}/${STEP}.log"
-  ensure_artifact_dir
+  local log_file="${LOG_DIR}/${STEP}.log"
+  ensure_log_dir
 
   event start "command=\"$*\" log=${log_file}"
   if "$@" >"${log_file}" 2>&1; then
