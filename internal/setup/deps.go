@@ -47,7 +47,12 @@ func (w *Wizard) fallbackInstall(bin string, installErr error) error {
 
 func (w *Wizard) installGumWithGo() error {
 	gobin := os.ExpandEnv("$HOME/.local/bin")
-	if err := runStreaming(w.Stdin, w.Stdout, w.Stderr, "bash", "-lc", "GOBIN="+gobin+" go install github.com/charmbracelet/gum@latest"); err != nil {
+	cmd := exec.Command("go", "install", "github.com/charmbracelet/gum@latest")
+	cmd.Env = append(os.Environ(), "GOBIN="+gobin)
+	cmd.Stdin = w.Stdin
+	cmd.Stdout = w.Stdout
+	cmd.Stderr = w.Stderr
+	if err := cmd.Run(); err != nil {
 		return err
 	}
 	path := os.Getenv("PATH")
