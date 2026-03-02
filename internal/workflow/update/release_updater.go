@@ -52,7 +52,7 @@ func (u *ReleaseUpdater) UpdateLatest(current string) error {
 		fmt.Printf("Already up to date: %s\n", current)
 		return nil
 	}
-	fmt.Printf("Updating to %s (no action required)...\n", rel.TagName)
+	fmt.Printf("Updating to %s...\n", rel.TagName)
 	asset, err := assetName(rel.TagName)
 	if err != nil {
 		return err
