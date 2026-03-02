@@ -19,10 +19,20 @@ func (w *Wizard) writeConfig() error {
 	}
 	repo, err := discoverRepoSlug()
 	if err != nil {
+		if w.Options.NonInteractive {
+			fmt.Fprintln(w.Stdout, "Skipping cleo.yml generation (repository context not detected).")
+			fmt.Fprintln(w.Stdout, "Next step: in your target repository run `cleo setup`.")
+			return nil
+		}
 		return err
 	}
 	parts := strings.Split(repo, "/")
 	if len(parts) != 2 {
+		if w.Options.NonInteractive {
+			fmt.Fprintf(w.Stdout, "Skipping cleo.yml generation (invalid repository slug: %s).\n", repo)
+			fmt.Fprintln(w.Stdout, "Next step: in your target repository run `cleo setup`.")
+			return nil
+		}
 		return fmt.Errorf("invalid GitHub repo slug: %s", repo)
 	}
 	if err := os.WriteFile("cleo.yml", []byte(defaultConfig(parts[0], parts[1])), 0o644); err != nil {
