@@ -24,6 +24,36 @@ All notable changes to this project will be documented in this file.
 
 - Add verification commands/results for unreleased work.
 
+## [v0.1.3]
+
+### Summary
+
+- Made release packaging reusable across projects without hardcoded cleo-only assumptions.
+
+### Highlights
+
+- Added release config keys for cross-project packaging:
+  - `release.binary_name`
+  - `release.build_target`
+  - `release.changelog_file`
+- Generalized Go release artifact naming and build target selection.
+- Generalized release scripts to accept configurable binary/build targets.
+
+### Breaking Changes
+
+- None.
+
+### Migration Notes
+
+- Existing `cleo.yml` keeps working with defaults.
+- Other projects can set `release.binary_name` and `release.build_target`.
+
+### Verification
+
+- `go test ./...`
+- `scripts/release/build-assets.sh v0.1.3 /tmp/cleo-release-test`
+- `scripts/release/verify-assets.sh v0.1.3 /tmp/cleo-release-test`
+
 ## [v0.1.2]
 
 ### Summary
