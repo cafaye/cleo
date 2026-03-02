@@ -1,0 +1,38 @@
+package help
+
+import (
+	"fmt"
+	"io"
+)
+
+func PrintRelease(out io.Writer) {
+	fmt.Fprintln(out, "usage: cleo release <command>")
+	fmt.Fprintln(out, "")
+	fmt.Fprintln(out, "commands:")
+	fmt.Fprintln(out, "  plan --version <vX.Y.Z>                Validate release preconditions")
+	fmt.Fprintln(out, "  cut --version <vX.Y.Z>                 Create and push tag")
+	fmt.Fprintln(out, "  publish --version <vX.Y.Z> [flags]     Create GitHub release")
+	fmt.Fprintln(out, "  verify --version <vX.Y.Z>              Verify published release")
+	fmt.Fprintln(out, "  help [command]                         Show release help")
+	fmt.Fprintln(out, "")
+	fmt.Fprintln(out, "examples:")
+	fmt.Fprintln(out, "  cleo release plan --version v0.1.0")
+	fmt.Fprintln(out, "  cleo release cut --version v0.1.0")
+	fmt.Fprintln(out, "  cleo release publish --version v0.1.0 --final")
+}
+
+func PrintReleaseCommand(out io.Writer, cmd string) bool {
+	switch cmd {
+	case "plan":
+		fmt.Fprintln(out, "usage: cleo release plan --version <vX.Y.Z>")
+	case "cut":
+		fmt.Fprintln(out, "usage: cleo release cut --version <vX.Y.Z>")
+	case "publish":
+		fmt.Fprintln(out, "usage: cleo release publish --version <vX.Y.Z> [--draft|--final] [--no-notes]")
+	case "verify":
+		fmt.Fprintln(out, "usage: cleo release verify --version <vX.Y.Z>")
+	default:
+		return false
+	}
+	return true
+}

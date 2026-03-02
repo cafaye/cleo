@@ -49,3 +49,9 @@ pr:
 
 safety:
   require_explicit_apply: true
+
+release:
+  tag_prefix: "v"
+  changelog_file: "CHANGELOG.md"
+  generate_notes: true
+  default_draft: false

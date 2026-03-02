@@ -23,6 +23,7 @@ func TestPrintRoot(t *testing.T) {
 		"setup",
 		"update",
 		"pr",
+		"release",
 		"cleo pr status 123",
 	)
 }

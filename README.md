@@ -139,6 +139,23 @@ cleo pr retarget <pr> --base <branch>
 cleo pr batch [--from <pr>] [--no-watch] [--no-run] [--no-rebase]
 ```
 
+## Release Commands
+
+```bash
+cleo release help
+cleo release plan --version v0.1.0
+cleo release cut --version v0.1.0
+cleo release publish --version v0.1.0 [--draft|--final] [--no-notes]
+cleo release verify --version v0.1.0
+```
+
+Release workflow follows the same deterministic pattern:
+
+1. `plan` validates preconditions.
+2. `cut` creates and pushes the tag.
+3. `publish` creates the GitHub release.
+4. `verify` confirms release visibility.
+
 ## Tests
 
 ```bash

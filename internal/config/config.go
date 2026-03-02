@@ -59,6 +59,12 @@ type Config struct {
 	Safety struct {
 		RequireExplicitApply bool `yaml:"require_explicit_apply"`
 	} `yaml:"safety"`
+	Release struct {
+		TagPrefix     string `yaml:"tag_prefix"`
+		ChangelogFile string `yaml:"changelog_file"`
+		GenerateNotes bool   `yaml:"generate_notes"`
+		DefaultDraft  bool   `yaml:"default_draft"`
+	} `yaml:"release"`
 }
 
 func Load(path string) (*Config, error) {
@@ -122,6 +128,12 @@ func (c *Config) applyDefaults() {
 	if len(c.PR.PostMerge.CommandAllowlistPrefixes) == 0 {
 		c.PR.PostMerge.CommandAllowlistPrefixes = []string{"bin/kamal"}
 	}
+	if c.Release.TagPrefix == "" {
+		c.Release.TagPrefix = "v"
+	}
+	if c.Release.ChangelogFile == "" {
+		c.Release.ChangelogFile = "CHANGELOG.md"
+	}
 }
 
 func (c *Config) validate() error {
@@ -138,6 +150,9 @@ func (c *Config) validate() error {
 	}
 	if c.PR.Checks.Mode != "required" && c.PR.Checks.Mode != "all" {
 		return fmt.Errorf("pr.checks.mode must be required|all")
+	}
+	if c.Release.TagPrefix == "" {
+		return fmt.Errorf("release.tag_prefix is required")
 	}
 	return nil
 }

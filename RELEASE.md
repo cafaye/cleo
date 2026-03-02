@@ -1,0 +1,33 @@
+# Release Runbook
+
+Use this sequence for GitHub releases:
+
+1. Plan
+
+```bash
+cleo release plan --version vX.Y.Z
+```
+
+2. Cut tag
+
+```bash
+cleo release cut --version vX.Y.Z
+```
+
+3. Publish release
+
+```bash
+cleo release publish --version vX.Y.Z --final
+```
+
+4. Verify
+
+```bash
+cleo release verify --version vX.Y.Z
+```
+
+## Notes
+
+- Run from a clean working tree.
+- Version must use configured prefix (`release.tag_prefix`, default `v`).
+- `publish` supports `--draft` and `--no-notes`.

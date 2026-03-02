@@ -40,6 +40,7 @@ Each workflow command follows:
 ## Current Workflow Modules
 
 - `internal/workflow/pr`: PR command contract with plan/run/verify.
+- `internal/workflow/release`: release command contract with plan/run/verify.
 - `internal/workflow/setup`: setup command wrapper.
 - `internal/workflow/update`: update command wrapper.
 

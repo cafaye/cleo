@@ -8,6 +8,7 @@ import (
 	"github.com/cafaye/cleo/internal/config"
 	corepr "github.com/cafaye/cleo/internal/pr"
 	workflowpr "github.com/cafaye/cleo/internal/workflow/pr"
+	workflowrelease "github.com/cafaye/cleo/internal/workflow/release"
 	workflowsetup "github.com/cafaye/cleo/internal/workflow/setup"
 	workflowupdate "github.com/cafaye/cleo/internal/workflow/update"
 )
@@ -30,6 +31,10 @@ func run(args []string) int {
 	if args[1] == "help" || args[1] == "--help" || args[1] == "-h" {
 		if len(args) > 2 && args[2] == "pr" {
 			help.PrintPR(os.Stdout)
+			return 0
+		}
+		if len(args) > 2 && args[2] == "release" {
+			help.PrintRelease(os.Stdout)
 			return 0
 		}
 		if len(args) > 2 {
@@ -57,10 +62,13 @@ func run(args []string) int {
 		}
 		return 0
 	}
-	if args[1] != "pr" {
+	if args[1] != "pr" && args[1] != "release" {
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", args[1])
 		help.PrintRoot(os.Stderr)
 		return 2
+	}
+	if args[1] == "release" {
+		return runRelease(args)
 	}
 	if len(args) < 3 {
 		help.PrintPR(os.Stdout)
@@ -83,6 +91,38 @@ func run(args []string) int {
 		return 1
 	}
 	cmd := workflowpr.New(workflowpr.NewAdapter(corepr.NewService(cfg)))
+	if err := cmd.Execute(args[2], args[3:]); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	return 0
+}
+
+func runRelease(args []string) int {
+	if len(args) < 3 {
+		help.PrintRelease(os.Stdout)
+		return 0
+	}
+	if args[2] == "help" || args[2] == "--help" || args[2] == "-h" {
+		if len(args) > 3 && !help.PrintReleaseCommand(os.Stdout, args[3]) {
+			fmt.Fprintf(os.Stderr, "unknown release command: %s\n\n", args[3])
+			help.PrintRelease(os.Stderr)
+			return 2
+		}
+		if len(args) <= 3 {
+			help.PrintRelease(os.Stdout)
+		}
+		return 0
+	}
+	cfg, err := config.Load("cleo.yml")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "config error: %v\n", err)
+		return 1
+	}
+	cmd := workflowrelease.New(
+		workflowrelease.NewAdapter(cfg.GitHub.Owner, cfg.GitHub.Repo),
+		workflowrelease.NewOptions(cfg),
+	)
 	if err := cmd.Execute(args[2], args[3:]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
