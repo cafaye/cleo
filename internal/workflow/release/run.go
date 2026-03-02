@@ -53,7 +53,14 @@ func Execute(a Actions, in Input, opts Options) (Result, error) {
 		if hasFlag(in.Args, "--no-notes") {
 			generateNotes = false
 		}
-		return Result{Name: "publish", Version: version}, a.Publish(version, draft, generateNotes)
+		notes := NoteOverrides{
+			Summary:         flagValue(in.Args, "--summary"),
+			Highlights:      flagValue(in.Args, "--highlights"),
+			BreakingChanges: flagValue(in.Args, "--breaking"),
+			MigrationNotes:  flagValue(in.Args, "--migration"),
+			Verification:    flagValue(in.Args, "--verification"),
+		}
+		return Result{Name: "publish", Version: version}, a.Publish(version, draft, generateNotes, notes)
 	case "verify":
 		return Result{Name: "verify", Version: version}, a.Verify(version)
 	default:

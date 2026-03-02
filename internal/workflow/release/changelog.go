@@ -45,10 +45,10 @@ func changelogEntry(path, version string) (string, error) {
 	return entry, nil
 }
 
-func changelogSections(path, version string) (ChangelogSections, error) {
+func changelogSections(path, version string) (ChangelogSections, []string) {
 	entry, err := changelogEntry(path, version)
 	if err != nil {
-		return ChangelogSections{}, err
+		return defaultSections(), []string{fmt.Sprintf("No changelog entry for %s in %s. Add one or pass release flags.", version, path)}
 	}
 	sections := ChangelogSections{
 		Summary:         sectionBody(entry, "Summary"),
@@ -57,36 +57,28 @@ func changelogSections(path, version string) (ChangelogSections, error) {
 		MigrationNotes:  sectionBody(entry, "Migration Notes"),
 		Verification:    sectionBody(entry, "Verification"),
 	}
-	if err := validateChangelogSections(sections, version); err != nil {
-		return ChangelogSections{}, err
+	warnings := []string{}
+	if strings.TrimSpace(sections.Summary) == "" {
+		warnings = append(warnings, "Missing ### Summary in changelog entry.")
+		sections.Summary = defaultSections().Summary
 	}
-	return sections, nil
-}
-
-func validateChangelogSections(s ChangelogSections, version string) error {
-	missing := []string{}
-	if strings.TrimSpace(s.Summary) == "" {
-		missing = append(missing, "### Summary")
+	if strings.TrimSpace(sections.Highlights) == "" {
+		warnings = append(warnings, "Missing ### Highlights in changelog entry.")
+		sections.Highlights = defaultSections().Highlights
 	}
-	if strings.TrimSpace(s.Highlights) == "" {
-		missing = append(missing, "### Highlights")
+	if strings.TrimSpace(sections.BreakingChanges) == "" {
+		warnings = append(warnings, "Missing ### Breaking Changes in changelog entry.")
+		sections.BreakingChanges = defaultSections().BreakingChanges
 	}
-	if strings.TrimSpace(s.BreakingChanges) == "" {
-		missing = append(missing, "### Breaking Changes")
+	if strings.TrimSpace(sections.MigrationNotes) == "" {
+		warnings = append(warnings, "Missing ### Migration Notes in changelog entry.")
+		sections.MigrationNotes = defaultSections().MigrationNotes
 	}
-	if strings.TrimSpace(s.MigrationNotes) == "" {
-		missing = append(missing, "### Migration Notes")
+	if strings.TrimSpace(sections.Verification) == "" {
+		warnings = append(warnings, "Missing ### Verification in changelog entry.")
+		sections.Verification = defaultSections().Verification
 	}
-	if strings.TrimSpace(s.Verification) == "" {
-		missing = append(missing, "### Verification")
-	}
-	if len(missing) > 0 {
-		return fmt.Errorf("changelog entry for %s is missing required sections: %s", version, strings.Join(missing, ", "))
-	}
-	if looksPlaceholder(s.Summary) || looksPlaceholder(s.Highlights) || looksPlaceholder(s.BreakingChanges) || looksPlaceholder(s.MigrationNotes) || looksPlaceholder(s.Verification) {
-		return fmt.Errorf("changelog entry for %s contains placeholder text", version)
-	}
-	return nil
+	return sections, warnings
 }
 
 func sectionBody(entry, heading string) string {
@@ -112,18 +104,12 @@ func sectionBody(entry, heading string) string {
 	return strings.TrimSpace(strings.Join(lines[start:end], "\n"))
 }
 
-func looksPlaceholder(text string) bool {
-	lc := strings.ToLower(text)
-	bad := []string{
-		"tbd",
-		"initial release for this version",
-		"see github changes for merged pr details",
-		"lorem ipsum",
+func defaultSections() ChangelogSections {
+	return ChangelogSections{
+		Summary:         "- Provide release summary via CHANGELOG.md `### Summary` or `--summary`.",
+		Highlights:      "- Provide highlights via CHANGELOG.md `### Highlights` or `--highlights`.",
+		BreakingChanges: "- Provide breaking changes via `### Breaking Changes` or `--breaking` (use `None` if none).",
+		MigrationNotes:  "- Provide migration notes via `### Migration Notes` or `--migration` (use `None` if none).",
+		Verification:    "- Provide verification notes via `### Verification` or `--verification`.",
 	}
-	for _, s := range bad {
-		if strings.Contains(lc, s) {
-			return true
-		}
-	}
-	return false
 }

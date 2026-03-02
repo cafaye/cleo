@@ -150,7 +150,7 @@ cleo release list --limit 10
 cleo release latest
 cleo release plan --version v0.1.0
 cleo release cut --version v0.1.0
-cleo release publish --version v0.1.0 [--draft|--final] [--no-notes]
+cleo release publish --version v0.1.0 [--draft|--final] [--no-notes] [--summary "..."] [--highlights "..."] [--breaking "..."] [--migration "..."] [--verification "..."]
 cleo release verify --version v0.1.0
 cleo release go publish --version v0.1.0 [--draft|--final] [--no-notes]
 ```
@@ -162,7 +162,7 @@ Release workflow follows the same deterministic pattern:
 3. `publish` creates the GitHub release.
 4. `verify` confirms release visibility.
 
-`publish` generates release notes in an enforced sectioned format using the matching `CHANGELOG.md` version entry and includes GitHub-generated change notes inside that template.
+`publish` generates release notes in an enforced sectioned format using the matching `CHANGELOG.md` version entry and includes GitHub-generated change notes inside that template. If changelog sections are missing, cleo warns and uses guidance defaults; agents can provide explicit section text via publish flags.
 
 For Go repositories (`go.mod` present), `publish` automatically:
 

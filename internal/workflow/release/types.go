@@ -29,10 +29,18 @@ type Actions interface {
 	EnsureReleaseMissing(version string) error
 	ValidateChangelog(version string) error
 	Cut(version string) error
-	Publish(version string, draft bool, generateNotes bool) error
+	Publish(version string, draft bool, generateNotes bool, notes NoteOverrides) error
 	Verify(version string) error
 	List(limit int) error
 	Latest() error
+}
+
+type NoteOverrides struct {
+	Summary         string
+	Highlights      string
+	BreakingChanges string
+	MigrationNotes  string
+	Verification    string
 }
 
 type Options struct {

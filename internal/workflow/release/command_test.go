@@ -13,7 +13,7 @@ func (f *fakeActions) EnsureReleaseMissing(string) error { return nil }
 func (f *fakeActions) ValidateChangelog(string) error    { return nil }
 func (f *fakeActions) Cut(string) error                  { return nil }
 func (f *fakeActions) Verify(string) error               { return nil }
-func (f *fakeActions) Publish(v string, d bool, n bool) error {
+func (f *fakeActions) Publish(v string, d bool, n bool, _ NoteOverrides) error {
 	f.publishedVersion = v
 	f.draft = d
 	f.notes = n

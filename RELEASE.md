@@ -49,10 +49,16 @@ cleo release verify --version vX.Y.Z
   - Verification
   - GitHub Changes
   - Full Changelog
-- `release plan` and `release publish` fail if `CHANGELOG.md` does not have a non-placeholder entry for the version.
-- Required headings inside each `## [vX.Y.Z]` changelog entry:
+- Preferred headings inside each `## [vX.Y.Z]` changelog entry:
   - `### Summary`
   - `### Highlights`
   - `### Breaking Changes`
   - `### Migration Notes`
   - `### Verification`
+- If sections are missing, cleo warns and uses guidance defaults.
+- Agents can provide explicit section data at publish time:
+  - `--summary`
+  - `--highlights`
+  - `--breaking`
+  - `--migration`
+  - `--verification`

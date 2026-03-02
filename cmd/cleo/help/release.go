@@ -25,7 +25,7 @@ func PrintRelease(out io.Writer) {
 	fmt.Fprintln(out, "  cleo release latest")
 	fmt.Fprintln(out, "  cleo release plan --version v0.1.0")
 	fmt.Fprintln(out, "  cleo release cut --version v0.1.0")
-	fmt.Fprintln(out, "  cleo release publish --version v0.1.0 --final")
+	fmt.Fprintln(out, "  cleo release publish --version v0.1.0 --final --summary \"...\" --highlights \"...\"")
 	fmt.Fprintln(out, "  cleo release go publish --version v0.1.0 --final")
 }
 
@@ -40,7 +40,7 @@ func PrintReleaseCommand(out io.Writer, cmd string) bool {
 	case "cut":
 		fmt.Fprintln(out, "usage: cleo release cut --version <vX.Y.Z>")
 	case "publish":
-		fmt.Fprintln(out, "usage: cleo release publish --version <vX.Y.Z> [--draft|--final] [--no-notes]")
+		fmt.Fprintln(out, "usage: cleo release publish --version <vX.Y.Z> [--draft|--final] [--no-notes] [--summary ...] [--highlights ...] [--breaking ...] [--migration ...] [--verification ...]")
 	case "verify":
 		fmt.Fprintln(out, "usage: cleo release verify --version <vX.Y.Z>")
 	case "go":
@@ -57,6 +57,6 @@ func PrintReleaseGo(out io.Writer) {
 	fmt.Fprintln(out, "commands:")
 	fmt.Fprintln(out, "  plan --version <vX.Y.Z>")
 	fmt.Fprintln(out, "  cut --version <vX.Y.Z>")
-	fmt.Fprintln(out, "  publish --version <vX.Y.Z> [--draft|--final] [--no-notes]")
+	fmt.Fprintln(out, "  publish --version <vX.Y.Z> [--draft|--final] [--no-notes] [--summary ...] [--highlights ...] [--breaking ...] [--migration ...] [--verification ...]")
 	fmt.Fprintln(out, "  verify --version <vX.Y.Z>")
 }

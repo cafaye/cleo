@@ -55,13 +55,13 @@ func (a *Adapter) Cut(version string) error {
 	return err
 }
 
-func (a *Adapter) Publish(version string, draft bool, generateNotes bool) error {
+func (a *Adapter) Publish(version string, draft bool, generateNotes bool, notes NoteOverrides) error {
 	args := []string{"release", "create", version, "--repo", a.repo, "--verify-tag"}
 	if draft {
 		args = append(args, "--draft")
 	}
 	if generateNotes {
-		notesPath, err := a.writeNotesFile(version)
+		notesPath, err := a.writeNotesFile(version, notes)
 		if err != nil {
 			return err
 		}
@@ -78,15 +78,16 @@ func (a *Adapter) Publish(version string, draft bool, generateNotes bool) error 
 	return err
 }
 
-func (a *Adapter) writeNotesFile(version string) (string, error) {
+func (a *Adapter) writeNotesFile(version string, notes NoteOverrides) (string, error) {
 	generated, err := a.generateNotes(version)
 	if err != nil {
 		return "", err
 	}
-	sections, err := changelogSections("CHANGELOG.md", version)
-	if err != nil {
-		return "", err
+	sections, warnings := changelogSections("CHANGELOG.md", version)
+	for _, w := range warnings {
+		fmt.Printf("Warning: %s\n", w)
 	}
+	sections = applyOverrides(sections, notes)
 	changelogURL := fmt.Sprintf("https://github.com/%s/blob/%s/CHANGELOG.md", a.repo, version)
 	body := buildReleaseNotesWithChangelog(version, generated, sections, changelogURL)
 	if err := validateReleaseNotes(body); err != nil {
@@ -146,8 +147,30 @@ func (a *Adapter) Verify(version string) error {
 }
 
 func (a *Adapter) ValidateChangelog(version string) error {
-	_, err := changelogSections("CHANGELOG.md", version)
-	return err
+	_, warnings := changelogSections("CHANGELOG.md", version)
+	for _, w := range warnings {
+		fmt.Printf("Warning: %s\n", w)
+	}
+	return nil
+}
+
+func applyOverrides(base ChangelogSections, o NoteOverrides) ChangelogSections {
+	if strings.TrimSpace(o.Summary) != "" {
+		base.Summary = o.Summary
+	}
+	if strings.TrimSpace(o.Highlights) != "" {
+		base.Highlights = o.Highlights
+	}
+	if strings.TrimSpace(o.BreakingChanges) != "" {
+		base.BreakingChanges = o.BreakingChanges
+	}
+	if strings.TrimSpace(o.MigrationNotes) != "" {
+		base.MigrationNotes = o.MigrationNotes
+	}
+	if strings.TrimSpace(o.Verification) != "" {
+		base.Verification = o.Verification
+	}
+	return base
 }
 
 func (a *Adapter) List(limit int) error {
