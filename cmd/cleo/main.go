@@ -64,6 +64,8 @@ func runPR(svc *pr.Service, cmd string, args []string) error {
 		return runChecks(svc, args)
 	case "watch":
 		return runWatch(svc, args)
+	case "doctor":
+		return runDoctor(svc, args)
 	case "run":
 		return runRun(svc, args)
 	case "merge":
@@ -107,6 +109,13 @@ func runWatch(svc *pr.Service, args []string) error {
 		return err
 	}
 	return svc.Watch(args[0])
+}
+
+func runDoctor(svc *pr.Service, args []string) error {
+	if len(args) > 0 {
+		return fmt.Errorf("usage: cleo pr doctor")
+	}
+	return svc.Doctor()
 }
 
 func runRun(svc *pr.Service, args []string) error {

@@ -55,6 +55,7 @@ LOG_DIR=logs make quality
 cleo pr status <pr>
 cleo pr gate <pr>
 cleo pr checks <pr>
+cleo pr doctor
 cleo pr watch <pr|sha>
 cleo pr run <pr> [--dry]
 cleo pr create [--title ...] [--summary ...] [--why ...] [--what ...] [--test ...] [--risk ...] [--rollback ...] [--owner ...] [--cmd ...] [--draft]
