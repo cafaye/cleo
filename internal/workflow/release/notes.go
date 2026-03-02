@@ -17,26 +17,26 @@ var requiredNoteSections = []string{
 }
 
 func buildReleaseNotes(version, generated string) string {
-	return buildReleaseNotesWithChangelog(version, generated, "", "")
+	return buildReleaseNotesWithChangelog(version, generated, ChangelogSections{}, "")
 }
 
-func buildReleaseNotesWithChangelog(version, generated, changelogEntry, changelogURL string) string {
+func buildReleaseNotesWithChangelog(version, generated string, sections ChangelogSections, changelogURL string) string {
 	fullChangelog := fmt.Sprintf("https://github.com/cafaye/cleo/commits/%s", version)
 	lines := []string{
 		"## Summary",
-		changelogEntry,
+		strings.TrimSpace(sections.Summary),
 		"",
 		"## Highlights",
-		changelogEntry,
+		strings.TrimSpace(sections.Highlights),
 		"",
 		"## Breaking Changes",
-		"- None.",
+		strings.TrimSpace(sections.BreakingChanges),
 		"",
 		"## Migration Notes",
-		"- None.",
+		strings.TrimSpace(sections.MigrationNotes),
 		"",
 		"## Verification",
-		"- Release artifacts uploaded and checksums generated.",
+		strings.TrimSpace(sections.Verification),
 		"",
 		"## GitHub Changes",
 		strings.TrimSpace(generated),

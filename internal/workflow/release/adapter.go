@@ -83,12 +83,12 @@ func (a *Adapter) writeNotesFile(version string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	changelog, err := changelogEntry("CHANGELOG.md", version)
+	sections, err := changelogSections("CHANGELOG.md", version)
 	if err != nil {
 		return "", err
 	}
 	changelogURL := fmt.Sprintf("https://github.com/%s/blob/%s/CHANGELOG.md", a.repo, version)
-	body := buildReleaseNotesWithChangelog(version, generated, changelog, changelogURL)
+	body := buildReleaseNotesWithChangelog(version, generated, sections, changelogURL)
 	if err := validateReleaseNotes(body); err != nil {
 		return "", err
 	}
@@ -146,7 +146,7 @@ func (a *Adapter) Verify(version string) error {
 }
 
 func (a *Adapter) ValidateChangelog(version string) error {
-	_, err := changelogEntry("CHANGELOG.md", version)
+	_, err := changelogSections("CHANGELOG.md", version)
 	return err
 }
 

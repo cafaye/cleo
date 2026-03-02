@@ -4,30 +4,71 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Summary
+
+- Release workflow now requires sectioned changelog input for agent-authored notes.
+
+### Highlights
+
 - Added release inspection commands: `cleo release list` and `cleo release latest`.
 - Enforced structured release notes sourced from changelog entries.
 
+### Breaking Changes
+
+- None.
+
+### Migration Notes
+
+- None.
+
+### Verification
+
+- `go test ./...`
+
 ## [v0.1.1]
 
-### Added
+### Summary
 
-- End-to-end GitHub release workflow with artifact build, checksum verification, and publish automation.
-- Release-based updater (`cleo update`) using published assets and checksum verification.
-- Explicit Go release path (`cleo release go ...`) and Go runtime module split.
+- Established end-to-end GitHub release automation and release-based updater behavior.
 
-### Changed
+### Highlights
 
-- Standardized release notes structure and release command output messages.
-- Improved agent workflow guidance and copy-ready `docs/YOUR_AGENTS.md` template.
+- Added artifact build + checksum verification + publish automation.
+- Added explicit Go release path (`cleo release go ...`) and runtime split.
+- Improved agent workflow guidance and copy-ready `docs/YOUR_AGENTS.md`.
+
+### Breaking Changes
+
+- None.
+
+### Migration Notes
+
+- None.
+
+### Verification
+
+- Release workflow run succeeded for `v0.1.1`.
 
 ## [v0.1.0]
 
-### Added
+### Summary
 
-- Initial `cleo` PR workflow commands for status, checks, gate, doctor, run, create, merge, rebase, retarget, and batch.
-- Setup wizard, one-command install/uninstall scripts, and non-interactive execution support.
+- Initial public release of `cleo` workflow-driven PR automation.
 
-### Changed
+### Highlights
 
-- Modular workflow architecture with `plan -> run -> verify` command contract.
-- Logging defaults and command help coverage for workflow-first usage.
+- Added PR workflow commands (`status`, `gate`, `checks`, `doctor`, `run`, `create`, `merge`, `rebase`, `retarget`, `batch`).
+- Added setup wizard and one-command install/uninstall scripts.
+- Introduced modular `plan -> run -> verify` workflow architecture.
+
+### Breaking Changes
+
+- None.
+
+### Migration Notes
+
+- None.
+
+### Verification
+
+- Release artifacts and checksums were published.

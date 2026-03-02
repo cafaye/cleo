@@ -50,3 +50,9 @@ cleo release verify --version vX.Y.Z
   - GitHub Changes
   - Full Changelog
 - `release plan` and `release publish` fail if `CHANGELOG.md` does not have a non-placeholder entry for the version.
+- Required headings inside each `## [vX.Y.Z]` changelog entry:
+  - `### Summary`
+  - `### Highlights`
+  - `### Breaking Changes`
+  - `### Migration Notes`
+  - `### Verification`
