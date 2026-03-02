@@ -17,8 +17,8 @@ func TestLoadAppliesDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.GitHub.BaseBranch != "main" {
-		t.Fatalf("expected default base branch main, got %s", cfg.GitHub.BaseBranch)
+	if cfg.GitHub.BaseBranch != "master" {
+		t.Fatalf("expected default base branch master, got %s", cfg.GitHub.BaseBranch)
 	}
 	if cfg.PR.Checks.Mode != "required" {
 		t.Fatalf("expected default checks mode required, got %s", cfg.PR.Checks.Mode)

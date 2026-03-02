@@ -5,13 +5,13 @@ Deterministic CLI for GitHub PR operations.
 ## One-Command Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cafaye/cleo/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/cafaye/cleo/master/install.sh | bash
 ```
 
 Non-interactive mode:
 
 ```bash
-NON_INTERACTIVE=1 curl -fsSL https://raw.githubusercontent.com/cafaye/cleo/main/install.sh | bash
+NON_INTERACTIVE=1 curl -fsSL https://raw.githubusercontent.com/cafaye/cleo/master/install.sh | bash
 ```
 
 ## Setup Wizard

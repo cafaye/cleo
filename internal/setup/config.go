@@ -39,7 +39,7 @@ github:
   owner: %s
   repo: %s
   host: github.com
-  base_branch: main
+  base_branch: master
   merge_method: merge
   delete_branch_on_merge: false
 
@@ -61,7 +61,7 @@ pr:
   deploy_watch:
     enabled: true
     workflow: Deploy to Production
-    branch: main
+    branch: master
     timeout_seconds: 2700
     poll_interval_seconds: 10
 

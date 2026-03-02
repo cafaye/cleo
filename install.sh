@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO_URL="${REPO_URL:-https://github.com/cafaye/cleo.git}"
-BRANCH="${BRANCH:-main}"
+BRANCH="${BRANCH:-master}"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 NON_INTERACTIVE="${NON_INTERACTIVE:-0}"
 

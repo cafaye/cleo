@@ -87,7 +87,7 @@ func (c *Config) applyDefaults() {
 		c.GitHub.Host = "github.com"
 	}
 	if c.GitHub.BaseBranch == "" {
-		c.GitHub.BaseBranch = "main"
+		c.GitHub.BaseBranch = "master"
 	}
 	if c.GitHub.MergeMethod == "" {
 		c.GitHub.MergeMethod = "merge"
