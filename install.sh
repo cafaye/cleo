@@ -28,24 +28,47 @@ install_pkg() {
   local pkg="$1"
   local resolved_pkg
   resolved_pkg="$(map_pkg_name "$pkg")"
-  if need brew; then
-    brew install "$resolved_pkg"
+  if [[ "$pkg" == "gum" ]] && ! install_pkg_native "$resolved_pkg"; then
+    install_gum_with_go
     return
+  fi
+  if ! install_pkg_native "$resolved_pkg"; then
+    echo "No supported package manager found to install $resolved_pkg"
+    exit 1
+  fi
+}
+
+install_pkg_native() {
+  local pkg="$1"
+  if need brew; then
+    brew install "$pkg"
+    return 0
   fi
   if need apt-get; then
-    sudo apt-get update && sudo apt-get install -y "$resolved_pkg"
-    return
+    sudo apt-get update && sudo apt-get install -y "$pkg"
+    return 0
   fi
   if need dnf; then
-    sudo dnf install -y "$resolved_pkg"
-    return
+    sudo dnf install -y "$pkg"
+    return 0
   fi
   if need yum; then
-    sudo yum install -y "$resolved_pkg"
-    return
+    sudo yum install -y "$pkg"
+    return 0
   fi
-  echo "No supported package manager found to install $resolved_pkg"
-  exit 1
+  return 1
+}
+
+install_gum_with_go() {
+  if ! need go; then
+    echo "gum fallback requires Go but go is not available"
+    exit 1
+  fi
+  local gobin
+  gobin="$HOME/.local/bin"
+  mkdir -p "$gobin"
+  GOBIN="$gobin" go install github.com/charmbracelet/gum@latest
+  export PATH="$gobin:$PATH"
 }
 
 map_pkg_name() {
@@ -122,6 +145,7 @@ echo "==> Cleo one-command install"
 ensure_dep git
 ensure_go
 ensure_dep gh
+ensure_dep gum
 
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT

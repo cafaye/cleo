@@ -2,6 +2,7 @@ package setup
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -26,41 +27,38 @@ func (w *Wizard) checkOrInstall(bin string) error {
 	}
 	fmt.Fprintf(w.Stdout, "Installing %s with: %s %s\n", bin, cmd, strings.Join(args, " "))
 	if err := runStreaming(w.Stdin, w.Stdout, w.Stderr, cmd, args...); err != nil {
-		return err
+		return w.fallbackInstall(bin, err)
 	}
 	if !hasCommand(bin) {
-		return fmt.Errorf("installation completed but %q is still not available", bin)
+		return w.fallbackInstall(bin, fmt.Errorf("installation completed but %q is still not available", bin))
 	}
 	return nil
 }
 
-func (w *Wizard) ensureOptional(bin string) {
-	if hasCommand(bin) {
-		fmt.Fprintf(w.Stdout, "[ok] %s\n", bin)
-		return
+func (w *Wizard) fallbackInstall(bin string, installErr error) error {
+	if bin != "gum" || !hasCommand("go") {
+		return installErr
 	}
-	fmt.Fprintf(w.Stdout, "[optional-missing] %s\n", bin)
-	if w.Options.NonInteractive {
-		fmt.Fprintf(w.Stdout, "Skipping optional %s install in non-interactive mode.\n", bin)
-		return
+	if err := w.installGumWithGo(); err != nil {
+		return fmt.Errorf("%v; fallback install failed: %w", installErr, err)
 	}
-	ok, err := w.confirm(fmt.Sprintf("Install optional dependency %s now?", bin))
-	if err != nil || !ok {
-		return
+	return nil
+}
+
+func (w *Wizard) installGumWithGo() error {
+	gobin := os.ExpandEnv("$HOME/.local/bin")
+	if err := runStreaming(w.Stdin, w.Stdout, w.Stderr, "bash", "-lc", "GOBIN="+gobin+" go install github.com/charmbracelet/gum@latest"); err != nil {
+		return err
 	}
-	cmd, args, err := installCommand(bin)
-	if err != nil {
-		fmt.Fprintf(w.Stdout, "Skipping %s install: %v\n", bin, err)
-		return
+	path := os.Getenv("PATH")
+	if !strings.Contains(path, gobin) {
+		_ = os.Setenv("PATH", gobin+":"+path)
 	}
-	fmt.Fprintf(w.Stdout, "Installing optional %s with: %s %s\n", bin, cmd, strings.Join(args, " "))
-	if err := runStreaming(w.Stdin, w.Stdout, w.Stderr, cmd, args...); err != nil {
-		fmt.Fprintf(w.Stdout, "Skipping %s install: %v\n", bin, err)
-		return
+	if !hasCommand("gum") {
+		return fmt.Errorf("gum not found after go install")
 	}
-	if !hasCommand(bin) {
-		fmt.Fprintf(w.Stdout, "Optional %s is still unavailable; continuing without it.\n", bin)
-	}
+	fmt.Fprintf(w.Stdout, "Installed gum with go install into %s\n", gobin)
+	return nil
 }
 
 func (w *Wizard) ensureGitHubAuth() error {
