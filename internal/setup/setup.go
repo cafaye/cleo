@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -35,6 +36,9 @@ func (w *Wizard) Run() error {
 		return err
 	}
 	if err := w.writeConfig(); err != nil {
+		return err
+	}
+	if err := w.installCleo(); err != nil {
 		return err
 	}
 	fmt.Fprintln(w.Stdout, "Setup complete. Next: cleo pr status <pr>")
@@ -254,4 +258,68 @@ pr:
 safety:
   require_explicit_apply: true
 `, owner, repo)
+}
+
+func (w *Wizard) installCleo() error {
+	exePath, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	targetDir := filepath.Join(home, ".local", "bin")
+	if err := os.MkdirAll(targetDir, 0o755); err != nil {
+		return err
+	}
+	targetPath := filepath.Join(targetDir, "cleo")
+	if exePath == targetPath {
+		fmt.Fprintf(w.Stdout, "cleo command is already installed at %s\n", targetPath)
+		return nil
+	}
+	if _, err := os.Stat(targetPath); err == nil {
+		overwrite, err := w.confirm(fmt.Sprintf("%s already exists. Replace it?", targetPath))
+		if err != nil {
+			return err
+		}
+		if !overwrite {
+			fmt.Fprintf(w.Stdout, "Keeping existing cleo command at %s\n", targetPath)
+			return nil
+		}
+	}
+	if err := copyExecutable(exePath, targetPath); err != nil {
+		return err
+	}
+	fmt.Fprintf(w.Stdout, "Installed cleo command to %s\n", targetPath)
+	if !pathContains(targetDir) {
+		fmt.Fprintf(w.Stdout, "Add %s to your PATH to use `cleo` globally.\n", targetDir)
+	}
+	return nil
+}
+
+func copyExecutable(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	out, err := os.OpenFile(dst, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o755)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	if _, err := io.Copy(out, in); err != nil {
+		return err
+	}
+	return out.Chmod(0o755)
+}
+
+func pathContains(dir string) bool {
+	for _, entry := range filepath.SplitList(os.Getenv("PATH")) {
+		if filepath.Clean(entry) == filepath.Clean(dir) {
+			return true
+		}
+	}
+	return false
 }
