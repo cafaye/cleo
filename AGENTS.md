@@ -4,12 +4,12 @@ Guidance for agents working in this repository.
 
 ## Project Focus
 
-`cleo` is a deterministic GitHub PR operations CLI.
+`cleo` is a deterministic engineering workflow CLI for GitHub-centered teams.
 
-- Keep scope on `cleo pr` workflows.
+- Keep scope on deterministic workflow families such as `cleo pr`, `cleo release`, `cleo qa`, and `cleo task`.
 - Prefer `cleo` workflows over raw `gh`/manual steps when a workflow command exists.
 - Prefer predictable behavior over smart behavior.
-- Do not add autonomous/agent runtime features in this repo.
+- Agent-assist capabilities are allowed when they are bounded by explicit workflow contracts, deterministic plan/run/verify phases, and clear operator control.
 
 ## Workflow Preference
 
