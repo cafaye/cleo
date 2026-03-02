@@ -18,6 +18,19 @@ Guidance for agents working in this repository.
 - Keep command UX simple and scriptable.
 - Make command failures explicit and actionable.
 
+## Size Limits
+
+- Go files: max ~250 LOC.
+- Shell scripts: max ~250 LOC.
+- Functions/methods (Go and shell): max ~50 LOC.
+- If a file or function approaches these limits, split by responsibility.
+
+## Rule Of Thumb
+
+- If a file needs many comments to explain flow, split it.
+- If a function has multiple responsibilities or deep branching, split it.
+- If a file crosses soft limits, document a concrete reason.
+
 ## Configuration
 
 - `cleo.yml` at repo root is required for command execution.
