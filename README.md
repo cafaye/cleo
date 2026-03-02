@@ -162,7 +162,7 @@ Release workflow follows the same deterministic pattern:
 3. `publish` creates the GitHub release.
 4. `verify` confirms release visibility.
 
-`publish` generates release notes in an enforced sectioned format and includes GitHub-generated change notes inside that template.
+`publish` generates release notes in an enforced sectioned format using the matching `CHANGELOG.md` version entry and includes GitHub-generated change notes inside that template.
 
 For Go repositories (`go.mod` present), `publish` automatically:
 

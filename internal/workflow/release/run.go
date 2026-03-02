@@ -20,6 +20,9 @@ func Execute(a Actions, in Input, opts Options) (Result, error) {
 		if err := a.CheckGitClean(); err != nil {
 			return Result{}, err
 		}
+		if err := a.ValidateChangelog(version); err != nil {
+			return Result{}, err
+		}
 		if err := a.EnsureReleaseMissing(version); err != nil {
 			return Result{}, err
 		}
@@ -33,6 +36,9 @@ func Execute(a Actions, in Input, opts Options) (Result, error) {
 		}
 		return Result{Name: "cut", Version: version}, a.Cut(version)
 	case "publish":
+		if err := a.ValidateChangelog(version); err != nil {
+			return Result{}, err
+		}
 		if err := a.EnsureReleaseMissing(version); err != nil {
 			return Result{}, err
 		}

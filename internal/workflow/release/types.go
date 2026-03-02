@@ -27,6 +27,7 @@ type Verification struct {
 type Actions interface {
 	CheckGitClean() error
 	EnsureReleaseMissing(version string) error
+	ValidateChangelog(version string) error
 	Cut(version string) error
 	Publish(version string, draft bool, generateNotes bool) error
 	Verify(version string) error

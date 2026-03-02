@@ -10,6 +10,7 @@ type fakeActions struct {
 
 func (f *fakeActions) CheckGitClean() error              { return nil }
 func (f *fakeActions) EnsureReleaseMissing(string) error { return nil }
+func (f *fakeActions) ValidateChangelog(string) error    { return nil }
 func (f *fakeActions) Cut(string) error                  { return nil }
 func (f *fakeActions) Verify(string) error               { return nil }
 func (f *fakeActions) Publish(v string, d bool, n bool) error {
