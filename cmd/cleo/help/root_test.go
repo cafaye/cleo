@@ -21,7 +21,19 @@ func TestPrintRoot(t *testing.T) {
 	testContainsAll(t, out.String(),
 		"usage: cleo <command>",
 		"setup",
+		"update",
 		"pr",
 		"cleo pr status 123",
 	)
+}
+
+func TestPrintCommandUpdate(t *testing.T) {
+	var out bytes.Buffer
+	ok := PrintCommand(&out, "update")
+	if !ok {
+		t.Fatal("expected update command help")
+	}
+	if !strings.Contains(out.String(), "usage: cleo update") {
+		t.Fatalf("unexpected output: %q", out.String())
+	}
 }

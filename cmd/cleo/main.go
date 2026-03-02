@@ -32,6 +32,14 @@ func run(args []string) int {
 			help.PrintPR(os.Stdout)
 			return 0
 		}
+		if len(args) > 2 {
+			if !help.PrintCommand(os.Stdout, args[2]) {
+				fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", args[2])
+				help.PrintRoot(os.Stderr)
+				return 2
+			}
+			return 0
+		}
 		help.PrintRoot(os.Stdout)
 		return 0
 	}
@@ -40,6 +48,13 @@ func run(args []string) int {
 			NonInteractive: hasFlag(args[2:], "--non-interactive"),
 		}
 		if err := setup.NewWizard(options).Run(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+		return 0
+	}
+	if args[1] == "update" {
+		if err := runUpdate(args[2:]); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}

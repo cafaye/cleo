@@ -45,6 +45,34 @@ cleo pr status <pr>
 cleo pr doctor
 ```
 
+## Help
+
+```bash
+cleo help
+cleo pr help
+cleo pr help merge
+```
+
+## Update cleo
+
+Update to latest `master` installer:
+
+```bash
+cleo update
+```
+
+Non-interactive update:
+
+```bash
+cleo update --non-interactive
+```
+
+Update from a specific ref (commit, tag, or branch):
+
+```bash
+cleo update --ref 9060afa
+```
+
 ## One-Command Uninstall
 
 ```bash
