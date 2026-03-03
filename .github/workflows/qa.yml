@@ -139,16 +139,13 @@ jobs:
           short_sha="$(printf "%s" "$SHA" | cut -c1-7)"
           goals="CI-gated QA run for PR #${PR_NUMBER} (${short_sha})"
           sid="$(go run ./cmd/cleo qa start --source pr --ref "$PR_NUMBER" --goals "$goals" | awk '{print $4}')"
-          session_dir=".cleo/evidence/qa/session-$sid"
-          mkdir -p "$session_dir"
           echo "sid=$sid" >> "$GITHUB_OUTPUT"
-          echo "session_dir=$session_dir" >> "$GITHUB_OUTPUT"
 
-          go run ./cmd/cleo qa plan --session "$sid" | tee "$session_dir/plan.txt"
-          go run ./cmd/cleo qa doctor --session "$sid" | tee "$session_dir/doctor.txt"
+          go run ./cmd/cleo qa plan --session "$sid"
+          go run ./cmd/cleo qa doctor --session "$sid"
 
           set +e
-          go run ./cmd/cleo qa run --session "$sid" --mode "$QA_MODE" | tee "$session_dir/run.txt"
+          go run ./cmd/cleo qa run --session "$sid" --mode "$QA_MODE"
           run_status=$?
           set -e
 
@@ -157,14 +154,6 @@ jobs:
             verdict="fail"
           fi
           go run ./cmd/cleo qa finish --session "$sid" --verdict "$verdict"
-          go run ./cmd/cleo qa report --session "$sid" | tee "$session_dir/report.txt"
+          go run ./cmd/cleo qa report --session "$sid"
 
           exit "$run_status"
-
-      - name: Upload QA artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: qa-artifacts-${{ github.run_id }}
-          path: .cleo/evidence/qa
-          if-no-files-found: ignore
