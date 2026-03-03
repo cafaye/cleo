@@ -62,3 +62,5 @@ qa:
   actors_dir: ".cleo/qa/actors"
   default_actors:
     - "core"
+  manual:
+    enabled: true

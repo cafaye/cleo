@@ -26,7 +26,7 @@ type Actions interface {
 	Finish(sessionID int64, verdict string) error
 	Report(sessionID int64) (string, error)
 	Plan(sessionID int64) (string, error)
-	Run(sessionID int64) (string, error)
+	Run(sessionID int64, mode string) (string, error)
 	Doctor(sessionID int64) (string, error)
 	Scaffold(title string) (string, error)
 }

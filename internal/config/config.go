@@ -70,6 +70,9 @@ type Config struct {
 	QA struct {
 		ActorsDir     string   `yaml:"actors_dir"`
 		DefaultActors []string `yaml:"default_actors"`
+		Manual        struct {
+			Enabled *bool `yaml:"enabled"`
+		} `yaml:"manual"`
 	} `yaml:"qa"`
 }
 
@@ -149,6 +152,13 @@ func (c *Config) applyDefaults() {
 	if c.QA.ActorsDir == "" {
 		c.QA.ActorsDir = ".cleo/qa/actors"
 	}
+}
+
+func (c *Config) QAManualEnabled() bool {
+	if c.QA.Manual.Enabled == nil {
+		return true
+	}
+	return *c.QA.Manual.Enabled
 }
 
 func (c *Config) validate() error {

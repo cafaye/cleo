@@ -33,9 +33,13 @@ func BuildPlan(in Input) (Plan, error) {
 		return Plan{Name: "plan", Description: "Validate BDD AC and resolve tool plan", ReadOnly: true}, nil
 	case "run":
 		if flagValue(in.Args, "--session") == "" {
-			return Plan{}, fmt.Errorf("usage: cleo qa run --session <id>")
+			return Plan{}, fmt.Errorf("usage: cleo qa run --session <id> [--mode <auto|manual>]")
 		}
-		return Plan{Name: "run", Description: "Run AC guidance and record findings"}, nil
+		mode := flagValue(in.Args, "--mode")
+		if mode != "" && mode != "auto" && mode != "manual" {
+			return Plan{}, fmt.Errorf("--mode must be auto|manual")
+		}
+		return Plan{Name: "run", Description: "Run BDD AC guidance and record findings"}, nil
 	case "doctor":
 		if flagValue(in.Args, "--session") == "" {
 			return Plan{}, fmt.Errorf("usage: cleo qa doctor --session <id>")

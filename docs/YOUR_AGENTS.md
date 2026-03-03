@@ -20,7 +20,8 @@
 - "verify release" -> `cleo release verify --version vX.Y.Z`
 - "start QA from PR AC block" -> `cleo qa start --source pr --ref <pr> --goals <text>`
 - "plan QA from BDD AC" -> `cleo qa plan --session <id>`
-- "run QA guidance" -> `cleo qa run --session <id>`
+- "run QA guidance (default automated-coverage mode)" -> `cleo qa run --session <id> --mode auto`
+- "run QA manual checks (if enabled)" -> `cleo qa run --session <id> --mode manual`
 
 ## Agent Self-Discovery
 

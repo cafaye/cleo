@@ -45,7 +45,8 @@ Guidance for agents working in this repository.
 - Go release explicitly -> `cleo release go plan|cut|publish|verify`
 - "start QA from PR AC block" -> `cleo qa start --source pr --ref <pr> --goals <text>`
 - "plan QA from AC" -> `cleo qa plan --session <id>`
-- "run QA guidance" -> `cleo qa run --session <id>`
+- "run QA guidance (default automated-coverage mode)" -> `cleo qa run --session <id> --mode auto`
+- "run QA manual checks (if enabled)" -> `cleo qa run --session <id> --mode manual`
 - "log QA findings as tasks" -> `cleo qa log --session <id> --title <text> --details <text>`
 
 ## QA Contract
@@ -59,6 +60,10 @@ Guidance for agents working in this repository.
   - `evidence_required` (artifacts expected from QA run)
 - AC defines behavior expectations, not executable command scripts.
 - Prefer concrete, observable `then` outcomes and explicit evidence items (for example screenshot, video, API response).
+- QA run modes:
+  - `auto` (default): verify behaviors are sufficiently covered by automated tests.
+  - `manual`: execute manual/exploratory checks and collect artifacts.
+- Manual mode is configurable in `cleo.yml` via `qa.manual.enabled`.
 
 ## Design Rules
 

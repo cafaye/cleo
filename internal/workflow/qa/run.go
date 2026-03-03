@@ -73,7 +73,11 @@ func Execute(a Actions, in Input) (Result, error) {
 		if err != nil {
 			return Result{}, err
 		}
-		text, err := a.Run(sessionID)
+		mode := flagValue(in.Args, "--mode")
+		if mode == "" {
+			mode = "auto"
+		}
+		text, err := a.Run(sessionID, mode)
 		if err != nil {
 			return Result{}, err
 		}

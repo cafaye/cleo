@@ -121,14 +121,25 @@ func (a *Adapter) Plan(sessionID int64) (string, error) {
 	return strings.Join(lines, "\n"), nil
 }
 
-func (a *Adapter) Run(sessionID int64) (string, error) {
+func (a *Adapter) Run(sessionID int64, mode string) (string, error) {
 	doc, _, err := a.loadSessionContract(sessionID)
 	if err != nil {
 		return "", err
 	}
+	resolvedMode := strings.TrimSpace(mode)
+	if resolvedMode == "" {
+		resolvedMode = "auto"
+	}
+	if resolvedMode != "auto" && resolvedMode != "manual" {
+		return "", fmt.Errorf("--mode must be auto|manual")
+	}
+	if resolvedMode == "manual" && !a.cfg.QAManualEnabled() {
+		return "", fmt.Errorf("manual QA mode is disabled in cleo.yml (qa.manual.enabled=false)")
+	}
 	var lines []string
 	lines = append(lines, fmt.Sprintf("QA AC guidance for session %d", sessionID))
 	lines = append(lines, fmt.Sprintf("name=%s", emptyDefault(doc.Name, "unnamed")))
+	lines = append(lines, fmt.Sprintf("mode=%s", resolvedMode))
 	lines = append(lines, fmt.Sprintf("criteria=%d", len(doc.Criteria)))
 	lines = append(lines, "")
 	for _, criterion := range doc.Criteria {
@@ -147,7 +158,18 @@ func (a *Adapter) Run(sessionID int64) (string, error) {
 		}
 		lines = append(lines, "")
 	}
-	lines = append(lines, "Run the criteria using configured tools, then log failures with `cleo qa log` and finish with `cleo qa finish`.")
+	if resolvedMode == "auto" {
+		lines = append(lines, "Mode auto:")
+		lines = append(lines, "1. Ensure each criterion has automated test coverage for given/when/then behavior.")
+		lines = append(lines, "2. Run test suites that cover these behaviors (at minimum `make test`; use targeted suites as needed).")
+		lines = append(lines, "3. For missing or weak coverage, log QA findings with exact criterion IDs and coverage gaps.")
+	} else {
+		lines = append(lines, "Mode manual:")
+		lines = append(lines, "1. Execute exploratory/manual checks for each criterion across declared actors and surfaces.")
+		lines = append(lines, "2. Capture required evidence artifacts (screenshots, videos, API responses, logs).")
+		lines = append(lines, "3. Log defects and behavior mismatches with criterion IDs and artifact references.")
+	}
+	lines = append(lines, "Then log findings with `cleo qa log`, and close session with `cleo qa finish`.")
 	return strings.Join(lines, "\n"), nil
 }
 
