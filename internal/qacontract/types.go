@@ -7,13 +7,18 @@ type Document struct {
 }
 
 type Criterion struct {
-	ID         string        `yaml:"id"`
-	Title      string        `yaml:"title"`
-	Severity   string        `yaml:"severity"`
-	Actors     []string      `yaml:"actors"`
-	Acceptance Acceptance    `yaml:"acceptance"`
-	Execution  ExecutionPlan `yaml:"execution"`
-	Evidence   []string      `yaml:"evidence_required"`
+	ID          string        `yaml:"id"`
+	Title       string        `yaml:"title"`
+	Severity    string        `yaml:"severity"`
+	Actors      []string      `yaml:"actors"`
+	Surface     string        `yaml:"surface"`
+	Environment string        `yaml:"environment"`
+	Given       string        `yaml:"given"`
+	When        string        `yaml:"when"`
+	Then        []string      `yaml:"then"`
+	Evidence    []string      `yaml:"evidence_required"`
+	Acceptance  Acceptance    `yaml:"acceptance"`
+	Execution   ExecutionPlan `yaml:"execution"`
 }
 
 type Acceptance struct {

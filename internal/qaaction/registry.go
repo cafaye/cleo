@@ -8,48 +8,27 @@ import (
 	"github.com/cafaye/cleo/internal/qacontract"
 )
 
-type Spec struct {
-	Name           string
-	Surfaces       []string
-	RequiredParams []string
-	Tool           string
-}
-
-type Registry struct {
-	specs map[string]Spec
-}
+type Registry struct{}
 
 func NewRegistry() Registry {
-	list := []Spec{
-		{Name: "open_url", Surfaces: []string{"web"}, RequiredParams: []string{"target"}, Tool: "browser"},
-		{Name: "login_form", Surfaces: []string{"web"}, RequiredParams: []string{"username_ref", "password_ref"}, Tool: "browser"},
-		{Name: "add_fixture_cart", Surfaces: []string{"web", "api"}, RequiredParams: []string{"fixture"}, Tool: "api"},
-		{Name: "capture_ui_value", Surfaces: []string{"web"}, RequiredParams: []string{"selector", "output_key"}, Tool: "browser"},
-		{Name: "call_api", Surfaces: []string{"api", "web"}, RequiredParams: []string{"method", "url", "output_key"}, Tool: "api"},
-		{Name: "assert_equal_money", Surfaces: []string{"api", "web"}, RequiredParams: []string{"left_key", "right_key"}, Tool: "assertion"},
-	}
-	m := make(map[string]Spec, len(list))
-	for _, spec := range list {
-		m[spec.Name] = spec
-	}
-	return Registry{specs: m}
+	return Registry{}
 }
 
 func (r Registry) Validate(doc qacontract.Document) error {
+	allowedSurfaces := map[string]struct{}{
+		"web":    {},
+		"api":    {},
+		"mobile": {},
+		"cli":    {},
+	}
 	for _, criterion := range doc.Criteria {
-		surface := strings.TrimSpace(criterion.Execution.Surface)
-		for i, step := range criterion.Execution.Steps {
-			spec, ok := r.specs[strings.TrimSpace(step.Action)]
-			if !ok {
-				return fmt.Errorf("criterion %q step %d uses unknown action %q", criterion.ID, i+1, step.Action)
-			}
-			if !supportsSurface(spec.Surfaces, surface) {
-				return fmt.Errorf("criterion %q step %d action %q does not support surface %q", criterion.ID, i+1, step.Action, surface)
-			}
-			for _, key := range spec.RequiredParams {
-				if strings.TrimSpace(step.Params[key]) == "" {
-					return fmt.Errorf("criterion %q step %d action %q missing required param %q", criterion.ID, i+1, step.Action, key)
-				}
+		surface := strings.TrimSpace(criterion.Surface)
+		if _, ok := allowedSurfaces[surface]; !ok {
+			return fmt.Errorf("criterion %q has unsupported surface %q", criterion.ID, criterion.Surface)
+		}
+		for i, evidence := range criterion.Evidence {
+			if strings.TrimSpace(evidence) == "" {
+				return fmt.Errorf("criterion %q evidence_required[%d] must not be empty", criterion.ID, i)
 			}
 		}
 	}
@@ -59,9 +38,19 @@ func (r Registry) Validate(doc qacontract.Document) error {
 func (r Registry) ToolSummary(doc qacontract.Document) []string {
 	set := map[string]struct{}{}
 	for _, criterion := range doc.Criteria {
-		for _, step := range criterion.Execution.Steps {
-			if spec, ok := r.specs[strings.TrimSpace(step.Action)]; ok {
-				set[spec.Tool] = struct{}{}
+		switch strings.TrimSpace(criterion.Surface) {
+		case "web":
+			set["browser"] = struct{}{}
+		case "api":
+			set["api"] = struct{}{}
+		}
+		for _, evidence := range criterion.Evidence {
+			lower := strings.ToLower(strings.TrimSpace(evidence))
+			if strings.Contains(lower, "screenshot") || strings.Contains(lower, "video") {
+				set["browser"] = struct{}{}
+			}
+			if strings.Contains(lower, "api") || strings.Contains(lower, "response") {
+				set["api"] = struct{}{}
 			}
 		}
 	}
@@ -71,13 +60,4 @@ func (r Registry) ToolSummary(doc qacontract.Document) []string {
 	}
 	sort.Strings(out)
 	return out
-}
-
-func supportsSurface(surfaces []string, surface string) bool {
-	for _, s := range surfaces {
-		if s == surface {
-			return true
-		}
-	}
-	return false
 }

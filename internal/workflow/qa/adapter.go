@@ -134,23 +134,13 @@ func (a *Adapter) Run(sessionID int64) (string, error) {
 	for _, criterion := range doc.Criteria {
 		lines = append(lines, fmt.Sprintf("criterion %s: %s", criterion.ID, criterion.Title))
 		lines = append(lines, fmt.Sprintf("  actors: %s", strings.Join(criterion.Actors, ",")))
-		lines = append(lines, fmt.Sprintf("  goal: %s", criterion.Acceptance.Goal))
-		lines = append(lines, fmt.Sprintf("  expected_result: %s", criterion.Acceptance.ExpectedResult))
-		lines = append(lines, fmt.Sprintf("  surface: %s", criterion.Execution.Surface))
-		if len(criterion.Execution.Preconditions) > 0 {
-			lines = append(lines, "  preconditions:")
-			keys := make([]string, 0, len(criterion.Execution.Preconditions))
-			for key := range criterion.Execution.Preconditions {
-				keys = append(keys, key)
-			}
-			sort.Strings(keys)
-			for _, key := range keys {
-				lines = append(lines, fmt.Sprintf("    - %s=%s", key, criterion.Execution.Preconditions[key]))
-			}
-		}
-		lines = append(lines, "  steps:")
-		for idx, step := range criterion.Execution.Steps {
-			lines = append(lines, fmt.Sprintf("    %d. action=%s params=%v", idx+1, step.Action, step.Params))
+		lines = append(lines, fmt.Sprintf("  surface: %s", criterion.Surface))
+		lines = append(lines, fmt.Sprintf("  environment: %s", emptyDefault(criterion.Environment, "local")))
+		lines = append(lines, fmt.Sprintf("  given: %s", criterion.Given))
+		lines = append(lines, fmt.Sprintf("  when: %s", criterion.When))
+		lines = append(lines, "  then:")
+		for idx, expected := range criterion.Then {
+			lines = append(lines, fmt.Sprintf("    %d. %s", idx+1, expected))
 		}
 		if len(criterion.Evidence) > 0 {
 			lines = append(lines, fmt.Sprintf("  evidence_required=%s", strings.Join(criterion.Evidence, ",")))
@@ -187,20 +177,12 @@ criteria:
     title: Replace with criterion title
     severity: medium
     actors: [core]
-    acceptance:
-      goal: Replace with behavior goal
-      expected_result: Replace with expected result
-    execution:
-      surface: api
-      environment: local
-      preconditions:
-        example_key: example_value
-      steps:
-        - action: call_api
-          params:
-            method: GET
-            url: http://localhost:0/placeholder
-            output_key: response
+    surface: web
+    environment: local
+    given: Replace with setup state and actor context
+    when: Replace with user/system action under test
+    then:
+      - Replace with observable expected outcome
     evidence_required:
       - replace_with_evidence_artifact`, name)
 	return block, nil

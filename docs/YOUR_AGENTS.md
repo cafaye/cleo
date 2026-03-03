@@ -5,6 +5,7 @@
 - Prefer `cleo` workflow commands over raw `gh` or manual steps.
 - For PR tasks, start with `cleo pr help` and use `cleo pr ...`.
 - For release tasks, start with `cleo release help` and use `cleo release ...`.
+- For QA tasks, start with `cleo qa help` and keep ACs in BDD form (`given/when/then`).
 - In automation/agent runs, use `--non-interactive` to avoid prompts.
 - If `cleo` does not support a required action, document the fallback command clearly.
 
@@ -17,6 +18,9 @@
 - "cut release tag" -> `cleo release cut --version vX.Y.Z`
 - "publish release" -> `cleo release publish --version vX.Y.Z`
 - "verify release" -> `cleo release verify --version vX.Y.Z`
+- "start QA from PR AC block" -> `cleo qa start --source pr --ref <pr> --goals <text>`
+- "plan QA from BDD AC" -> `cleo qa plan --session <id>`
+- "run QA guidance" -> `cleo qa run --session <id>`
 
 ## Agent Self-Discovery
 

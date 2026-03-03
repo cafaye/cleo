@@ -10,7 +10,7 @@ func BuildPlan(in Input) (Plan, error) {
 		}
 		return Plan{Name: "start", Description: "Start QA session"}, nil
 	case "scaffold":
-		return Plan{Name: "scaffold", Description: "Generate AC scaffold", ReadOnly: true}, nil
+		return Plan{Name: "scaffold", Description: "Generate BDD AC scaffold", ReadOnly: true}, nil
 	case "log":
 		if flagValue(in.Args, "--session") == "" || flagValue(in.Args, "--title") == "" || flagValue(in.Args, "--details") == "" {
 			return Plan{}, fmt.Errorf("usage: cleo qa log --session <id> --title <text> --details <text> [--severity <low|medium|high|critical>]")
@@ -30,7 +30,7 @@ func BuildPlan(in Input) (Plan, error) {
 		if flagValue(in.Args, "--session") == "" {
 			return Plan{}, fmt.Errorf("usage: cleo qa plan --session <id>")
 		}
-		return Plan{Name: "plan", Description: "Validate AC and resolve action/tool plan", ReadOnly: true}, nil
+		return Plan{Name: "plan", Description: "Validate BDD AC and resolve tool plan", ReadOnly: true}, nil
 	case "run":
 		if flagValue(in.Args, "--session") == "" {
 			return Plan{}, fmt.Errorf("usage: cleo qa run --session <id>")

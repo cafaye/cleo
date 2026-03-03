@@ -9,7 +9,7 @@ func PrintQA(out io.Writer) {
 	fmt.Fprintln(out, "usage: cleo qa <command>")
 	fmt.Fprintln(out, "")
 	fmt.Fprintln(out, "commands:")
-	fmt.Fprintln(out, "  scaffold [--title <text>]              Print AC scaffold YAML")
+	fmt.Fprintln(out, "  scaffold [--title <text>]              Print BDD AC scaffold YAML")
 	fmt.Fprintln(out, "  start --source <branch|pr|request> --ref <name|id|text> --goals <text> [--ac <yaml>]")
 	fmt.Fprintln(out, "  doctor --session <id>")
 	fmt.Fprintln(out, "  plan --session <id>")

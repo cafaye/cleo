@@ -37,4 +37,7 @@ func TestRenderDefaults(t *testing.T) {
 	if !strings.Contains(body, "actors: [core]") {
 		t.Fatal("expected default AC scaffold")
 	}
+	if !strings.Contains(body, "given: Replace with setup state and actor context") {
+		t.Fatal("expected default BDD AC scaffold")
+	}
 }

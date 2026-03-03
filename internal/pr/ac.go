@@ -23,20 +23,12 @@ criteria:
     title: Replace with criterion title
     severity: medium
     actors: [core]
-    acceptance:
-      goal: Replace with behavior goal
-      expected_result: Replace with expected result
-    execution:
-      surface: api
-      environment: local
-      preconditions:
-        example_key: example_value
-      steps:
-        - action: call_api
-          params:
-            method: GET
-            url: http://localhost:0/placeholder
-            output_key: response
+    surface: web
+    environment: local
+    given: Replace with setup state and actor context
+    when: Replace with user/system action under test
+    then:
+      - Replace with observable expected outcome
     evidence_required:
       - replace_with_evidence_artifact`
 }

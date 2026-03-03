@@ -7,6 +7,9 @@ func (w *Wizard) Run() error {
 	if err := w.ensureDeps(); err != nil {
 		return err
 	}
+	if err := w.ensurePlaywrightRuntime(); err != nil {
+		return err
+	}
 	if err := w.ensureGitHubAuth(); err != nil {
 		return err
 	}
@@ -21,7 +24,7 @@ func (w *Wizard) Run() error {
 }
 
 func (w *Wizard) ensureDeps() error {
-	for _, bin := range []string{"git", "gh", "gum"} {
+	for _, bin := range []string{"git", "gh", "gum", "node"} {
 		if err := w.checkOrInstall(bin); err != nil {
 			return err
 		}
