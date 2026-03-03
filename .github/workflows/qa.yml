@@ -1,6 +1,12 @@
 name: qa
 
 on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
   workflow_run:
     workflows:
       - ci
@@ -13,20 +19,21 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.workflow_run.head_branch || github.ref }}
   cancel-in-progress: true
 
 jobs:
   qa:
     if: |
+      github.event_name == 'pull_request' ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
-      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-      BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+      SHA: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
+      BRANCH: ${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch || github.ref_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,13 +56,40 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          pr_number="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number' || true)"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            pr_number="${{ github.event.pull_request.number }}"
+          else
+            pr_number="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number' || true)"
+          fi
           if [[ -z "$pr_number" || "$pr_number" == "null" ]]; then
             echo "has_pr=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "has_pr=true" >> "$GITHUB_OUTPUT"
           echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for CI success
+        if: steps.ctx.outputs.has_pr == 'true' && github.event_name == 'pull_request'
+        shell: bash
+        env:
+          PR_NUMBER: ${{ steps.ctx.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 60); do
+            ci_conclusion="$(gh run list --workflow ci.yml --branch "$BRANCH" --event pull_request --json conclusion,status --jq '.[0].conclusion' || true)"
+            ci_status="$(gh run list --workflow ci.yml --branch "$BRANCH" --event pull_request --json conclusion,status --jq '.[0].status' || true)"
+            if [[ "$ci_status" == "completed" && "$ci_conclusion" == "success" ]]; then
+              echo "CI succeeded; continuing to QA."
+              exit 0
+            fi
+            if [[ "$ci_status" == "completed" && "$ci_conclusion" != "success" ]]; then
+              echo "CI completed with conclusion=$ci_conclusion; skipping/failing QA."
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for CI to complete."
+          exit 1
 
       - name: Skip when no PR context
         if: steps.ctx.outputs.has_pr != 'true'
