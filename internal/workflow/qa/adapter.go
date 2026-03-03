@@ -347,7 +347,7 @@ func (a *Adapter) renderPRReportMarkdown(session taskstore.Session, doc qacontra
 	lines = append(lines, fmt.Sprintf("- Source: `%s` `%s`", session.Source, session.Ref))
 	lines = append(lines, fmt.Sprintf("- Goals: %s", session.Goals))
 	lines = append(lines, "")
-	lines = append(lines, "#### BDD Checklist")
+	lines = append(lines, "#### BDD Results")
 	checked := len(tasks) == 0 && strings.TrimSpace(session.Verdict) == "pass"
 	box := " "
 	if checked {
@@ -355,8 +355,11 @@ func (a *Adapter) renderPRReportMarkdown(session taskstore.Session, doc qacontra
 	}
 	for _, c := range doc.Criteria {
 		lines = append(lines, fmt.Sprintf("- [%s] %s: %s", box, c.ID, c.Title))
+		lines = append(lines, fmt.Sprintf("  - Given: %s", c.Given))
+		lines = append(lines, fmt.Sprintf("  - When: %s", c.When))
+		lines = append(lines, "  - Then:")
 		for _, outcome := range c.Then {
-			lines = append(lines, fmt.Sprintf("  - [%s] %s", box, outcome))
+			lines = append(lines, fmt.Sprintf("    - [%s] %s", box, outcome))
 		}
 	}
 	lines = append(lines, "")
