@@ -24,6 +24,52 @@ All notable changes to this project will be documented in this file.
 
 - Add verification commands/results for unreleased work.
 
+## [v0.2.0]
+
+### Summary
+
+- Introduced a reusable, CI-gated QA system for PRs with BDD acceptance criteria and policy-driven execution.
+
+### Highlights
+
+- Added end-to-end QA/task workflows for agent-driven execution and follow-up work tracking.
+- Standardized Acceptance Criteria to BDD contract fields (`given`, `when`, `then`) with actor/surface/environment metadata.
+- Added QA run modes:
+  - `auto` (default): validate automated test coverage against BDD criteria.
+  - `manual`: optional exploratory/manual execution path.
+  - `pr`: resolve mode from PR QA policy block.
+- Added PR QA policy markers and parsing (`cleo-qa-policy:start/end`) to support per-PR mode/workflow settings.
+- Added QA reporting integration:
+  - `cleo qa report` supports PR publishing when explicitly requested.
+  - PR checks now surface QA workflow presence relative to AC/policy.
+- Added reusable QA bootstrap:
+  - `cleo qa init` installs reusable QA kit files.
+  - `cleo setup` now bootstraps QA kit assets on first setup.
+- Added CI-gated GitHub QA workflow (`.github/workflows/qa.yml`) that runs QA only after CI success.
+- Added deterministic local evidence conventions (`qa.evidence_dir`, default `.cleo/evidence`) and per-session evidence directories.
+- Added Playwright Go browser automation setup checks and runtime installation support for QA tooling.
+
+### Breaking Changes
+
+- None.
+
+### Migration Notes
+
+- Repositories should include PR AC markers and BDD-formatted criteria for automated QA execution.
+- Repositories can run `cleo qa init` to scaffold QA workflow/template assets where missing.
+- Default QA automation flow now favors workflow logs/check results over automatic PR comment/body publishing.
+
+### Verification
+
+- `make quality`
+- `cleo qa init`
+- `cleo qa scaffold`
+- `cleo qa start --source pr --ref <pr> --goals "<goal>"`
+- `cleo qa run --session <id> --mode auto`
+- `cleo qa finish --session <id> --verdict pass`
+- `cleo qa report --session <id>`
+- `cleo pr checks <pr>`
+
 ## [v0.1.4]
 
 ### Summary
