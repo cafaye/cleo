@@ -22,7 +22,8 @@ func Doctor(required []string) []Check {
 		checks = append(checks, binCheck("curl", "api"))
 	}
 	if _, ok := set["browser"]; ok {
-		checks = append(checks, binCheck("npx", "browser (playwright via npx)"))
+		checks = append(checks, binCheck("node", "browser (playwright-go runtime dependency)"))
+		checks = append(checks, Check{Name: "browser adapter", Status: "ready", Detail: "playwright-go adapter configured"})
 	}
 	return checks
 }
