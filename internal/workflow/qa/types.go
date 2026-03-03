@@ -21,6 +21,7 @@ type Verification struct {
 }
 
 type Actions interface {
+	Init() error
 	Start(source string, ref string, goals string, ac string) (int64, error)
 	LogIssue(sessionID int64, title string, details string, severity string) (int64, bool, error)
 	Finish(sessionID int64, verdict string) error

@@ -4,6 +4,8 @@ import "fmt"
 
 func BuildPlan(in Input) (Plan, error) {
 	switch in.Name {
+	case "init":
+		return Plan{Name: "init", Description: "Install QA reusable kit assets"}, nil
 	case "start":
 		if flagValue(in.Args, "--source") == "" || flagValue(in.Args, "--ref") == "" {
 			return Plan{}, fmt.Errorf("usage: cleo qa start --source <branch|pr|request> --ref <name|id|text> --goals <text> [--ac <yaml>]")

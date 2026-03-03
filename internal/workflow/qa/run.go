@@ -4,6 +4,12 @@ import "fmt"
 
 func Execute(a Actions, in Input) (Result, error) {
 	switch in.Name {
+	case "init":
+		if err := a.Init(); err != nil {
+			return Result{}, err
+		}
+		fmt.Println("QA kit initialized.")
+		return Result{Name: "init"}, nil
 	case "start":
 		source := flagValue(in.Args, "--source")
 		ref := flagValue(in.Args, "--ref")

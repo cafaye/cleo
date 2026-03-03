@@ -44,6 +44,7 @@ Guidance for agents working in this repository.
 - "new release" -> `cleo release plan|cut|publish|verify`
 - Go release explicitly -> `cleo release go plan|cut|publish|verify`
 - "start QA from PR AC block" -> `cleo qa start --source pr --ref <pr> --goals <text>`
+- "bootstrap QA kit in a repo" -> `cleo qa init`
 - "plan QA from AC" -> `cleo qa plan --session <id>`
 - "run QA guidance (default automated-coverage mode)" -> `cleo qa run --session <id> --mode auto`
 - "run QA manual checks (if enabled)" -> `cleo qa run --session <id> --mode manual`

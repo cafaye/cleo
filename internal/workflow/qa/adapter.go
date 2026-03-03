@@ -48,6 +48,10 @@ func NewAdapter(store *taskstore.Store, repoKey string, cfg *config.Config) *Ada
 	}
 }
 
+func (a *Adapter) Init() error {
+	return qacatalog.EnsureQAKit(".")
+}
+
 func (a *Adapter) Start(source string, ref string, goals string, ac string) (int64, error) {
 	acText, err := a.resolveAC(source, ref, ac)
 	if err != nil {

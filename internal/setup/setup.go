@@ -1,6 +1,10 @@
 package setup
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/cafaye/cleo/internal/qacatalog"
+)
 
 func (w *Wizard) Run() error {
 	w.title("Cleo Setup")
@@ -16,11 +20,19 @@ func (w *Wizard) Run() error {
 	if err := w.writeConfig(); err != nil {
 		return err
 	}
+	if err := w.ensureQAKit(); err != nil {
+		return err
+	}
 	if err := w.installCleo(); err != nil {
 		return err
 	}
 	fmt.Fprintln(w.Stdout, "Setup complete. Next: cleo pr status <pr>")
 	return nil
+}
+
+func (w *Wizard) ensureQAKit() error {
+	fmt.Fprintln(w.Stdout, "Ensuring QA kit assets...")
+	return qacatalog.EnsureQAKit(".")
 }
 
 func (w *Wizard) ensureDeps() error {

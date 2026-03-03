@@ -9,6 +9,7 @@ func PrintQA(out io.Writer) {
 	fmt.Fprintln(out, "usage: cleo qa <command>")
 	fmt.Fprintln(out, "")
 	fmt.Fprintln(out, "commands:")
+	fmt.Fprintln(out, "  init                                     Install/update reusable QA kit files")
 	fmt.Fprintln(out, "  scaffold [--title <text>]              Print BDD AC scaffold YAML")
 	fmt.Fprintln(out, "  start --source <branch|pr|request> --ref <name|id|text> --goals <text> [--ac <yaml>]")
 	fmt.Fprintln(out, "  doctor --session <id>")
@@ -22,6 +23,8 @@ func PrintQA(out io.Writer) {
 
 func PrintQACommand(out io.Writer, cmd string) bool {
 	switch cmd {
+	case "init":
+		fmt.Fprintln(out, "usage: cleo qa init")
 	case "scaffold":
 		fmt.Fprintln(out, "usage: cleo qa scaffold [--title <text>]")
 	case "start":
