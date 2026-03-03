@@ -24,6 +24,42 @@ All notable changes to this project will be documented in this file.
 
 - Add verification commands/results for unreleased work.
 
+## [v0.2.1]
+
+### Summary
+
+- Improved upgrade safety by adding additive post-update/setup migrations and automatic QA kit bootstrap for existing repos.
+
+### Highlights
+
+- Added safe post-update migrations for existing repositories:
+  - Fill only missing `qa` config defaults in `cleo.yml` (no overwrite of existing values).
+  - Ensure QA kit assets exist in-repo.
+- Wired migrations into both flows:
+  - `cleo update` now runs post-update migrations automatically.
+  - `cleo setup` now runs the same migrations after config handling.
+- Added reusable QA kit bootstrap under `qacatalog` and exposed it through:
+  - `cleo qa init`
+  - shared setup/update migration path.
+- Added setup migration tests covering:
+  - missing-key backfill,
+  - no-op when keys are already present.
+
+### Breaking Changes
+
+- None.
+
+### Migration Notes
+
+- Existing users should run `cleo update` and then `cleo setup` (or `cleo qa init`) in active repos to ensure QA kit/config defaults are present.
+- Existing `cleo.yml` values are preserved; only missing keys are added.
+
+### Verification
+
+- `go test ./internal/setup ./internal/workflow/update -v`
+- `cleo setup --non-interactive`
+- `make quality`
+
 ## [v0.2.0]
 
 ### Summary
