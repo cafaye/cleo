@@ -28,4 +28,5 @@ type Actions interface {
 	Plan(sessionID int64) (string, error)
 	Run(sessionID int64) (string, error)
 	Doctor(sessionID int64) (string, error)
+	Scaffold(title string) (string, error)
 }

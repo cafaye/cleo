@@ -9,6 +9,8 @@ func BuildPlan(in Input) (Plan, error) {
 			return Plan{}, fmt.Errorf("usage: cleo qa start --source <branch|pr|request> --ref <name|id|text> --goals <text> [--ac <yaml>]")
 		}
 		return Plan{Name: "start", Description: "Start QA session"}, nil
+	case "scaffold":
+		return Plan{Name: "scaffold", Description: "Generate AC scaffold", ReadOnly: true}, nil
 	case "log":
 		if flagValue(in.Args, "--session") == "" || flagValue(in.Args, "--title") == "" || flagValue(in.Args, "--details") == "" {
 			return Plan{}, fmt.Errorf("usage: cleo qa log --session <id> --title <text> --details <text> [--severity <low|medium|high|critical>]")

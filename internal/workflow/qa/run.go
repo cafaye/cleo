@@ -14,6 +14,13 @@ func Execute(a Actions, in Input) (Result, error) {
 		}
 		fmt.Printf("QA session started: %d\n", id)
 		return Result{Name: "start"}, nil
+	case "scaffold":
+		text, err := a.Scaffold(flagValue(in.Args, "--title"))
+		if err != nil {
+			return Result{}, err
+		}
+		fmt.Println(text)
+		return Result{Name: "scaffold"}, nil
 	case "log":
 		sessionID, err := int64Flag(in.Args, "--session")
 		if err != nil {

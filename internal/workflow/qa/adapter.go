@@ -175,6 +175,37 @@ func (a *Adapter) Doctor(sessionID int64) (string, error) {
 	return strings.Join(lines, "\n"), nil
 }
 
+func (a *Adapter) Scaffold(title string) (string, error) {
+	name := strings.TrimSpace(title)
+	if name == "" {
+		name = "Acceptance Criteria"
+	}
+	block := fmt.Sprintf(`version: 1
+name: %s
+criteria:
+  - id: c1
+    title: Replace with criterion title
+    severity: medium
+    actors: [core]
+    acceptance:
+      goal: Replace with behavior goal
+      expected_result: Replace with expected result
+    execution:
+      surface: api
+      environment: local
+      preconditions:
+        example_key: example_value
+      steps:
+        - action: call_api
+          params:
+            method: GET
+            url: http://localhost:0/placeholder
+            output_key: response
+    evidence_required:
+      - replace_with_evidence_artifact`, name)
+	return block, nil
+}
+
 func (a *Adapter) loadSessionContract(sessionID int64) (qacontract.Document, []string, error) {
 	session, err := a.store.Session(context.Background(), sessionID)
 	if err != nil {
