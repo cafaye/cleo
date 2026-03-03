@@ -125,7 +125,8 @@ jobs:
 
       - name: Skip QA
         if: steps.policy.outputs.run != 'true'
-        run: echo "Skipping QA run: ${{ steps.policy.outputs.reason }}"
+        run: |
+          echo "Skipping QA run: ${{ steps.policy.outputs.reason }}"
 
       - name: Run PR QA session
         if: steps.policy.outputs.run == 'true'
