@@ -41,7 +41,7 @@ _No QA report published yet._
 ## QA Policy
 <!-- cleo-qa-policy:start -->
 mode: auto
-workflow: qa-pr
+workflow: qa
 run_on:
   - opened
   - synchronize
