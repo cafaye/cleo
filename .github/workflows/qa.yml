@@ -7,23 +7,24 @@ on:
       - synchronize
       - reopened
       - ready_for_review
+  push:
+    branches-ignore:
+      - master
+      - main
 
 permissions:
   contents: write
   pull-requests: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   qa:
-    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      PR_ACTION: ${{ github.event.action }}
       SHA: ${{ github.sha }}
     steps:
       - name: Checkout
@@ -40,9 +41,47 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gh shellcheck nodejs
 
+      - name: Resolve PR context
+        id: ctx
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            pr_number="${{ github.event.pull_request.number }}"
+            pr_action="${{ github.event.action }}"
+            pr_draft="${{ github.event.pull_request.draft }}"
+          else
+            branch="${GITHUB_REF#refs/heads/}"
+            pr_number="$(gh pr list --head "$branch" --state open --json number --jq '.[0].number' || true)"
+            pr_action="synchronize"
+            pr_draft="false"
+          fi
+
+          if [[ -z "$pr_number" || "$pr_number" == "null" ]]; then
+            echo "has_pr=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "has_pr=true" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "pr_action=$pr_action" >> "$GITHUB_OUTPUT"
+          echo "pr_draft=$pr_draft" >> "$GITHUB_OUTPUT"
+
+      - name: Skip when no PR context
+        if: steps.ctx.outputs.has_pr != 'true'
+        run: echo "Skipping QA run: no open PR for this branch."
+
+      - name: Skip draft PR
+        if: steps.ctx.outputs.has_pr == 'true' && steps.ctx.outputs.pr_draft == 'true'
+        run: echo "Skipping QA run: PR is draft."
+
       - name: Evaluate PR QA policy
         id: policy
+        if: steps.ctx.outputs.has_pr == 'true' && steps.ctx.outputs.pr_draft != 'true'
         shell: bash
+        env:
+          PR_NUMBER: ${{ steps.ctx.outputs.pr_number }}
+          PR_ACTION: ${{ steps.ctx.outputs.pr_action }}
         run: |
           set -euo pipefail
           body="$(gh pr view "$PR_NUMBER" --json body --jq .body)"
@@ -90,6 +129,7 @@ jobs:
         if: steps.policy.outputs.run == 'true'
         shell: bash
         env:
+          PR_NUMBER: ${{ steps.ctx.outputs.pr_number }}
           QA_MODE: ${{ steps.policy.outputs.mode }}
           QA_PUBLISH: ${{ steps.policy.outputs.publish }}
         run: |
