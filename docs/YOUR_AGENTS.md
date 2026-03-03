@@ -23,6 +23,7 @@
 - "run QA guidance (default automated-coverage mode)" -> `cleo qa run --session <id> --mode auto`
 - "run QA manual checks (if enabled)" -> `cleo qa run --session <id> --mode manual`
 - "publish QA report to PR (comment + latest summary block)" -> `cleo qa report --session <id> --publish pr --ref <pr>`
+- QA evidence root comes from `qa.evidence_dir` (default `.cleo/evidence`) and session outputs go to `.cleo/evidence/qa/session-<id>`.
 
 ## Agent Self-Discovery
 

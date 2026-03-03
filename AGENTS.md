@@ -59,6 +59,7 @@ Guidance for agents working in this repository.
   - `environment` (default to `local` unless stated)
   - `given`, `when`, `then` (behavior contract)
   - `evidence_required` (artifacts expected from QA run)
+- QA session evidence is written under `qa.evidence_dir/qa/session-<id>` (default `.cleo/evidence/qa/session-<id>`).
 - AC defines behavior expectations, not executable command scripts.
 - Prefer concrete, observable `then` outcomes and explicit evidence items (for example screenshot, video, API response).
 - QA run modes:

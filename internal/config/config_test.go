@@ -26,6 +26,9 @@ func TestLoadAppliesDefaults(t *testing.T) {
 	if !cfg.QAManualEnabled() {
 		t.Fatal("expected qa manual mode enabled by default")
 	}
+	if cfg.QAEvidenceDir() != ".cleo/evidence" {
+		t.Fatalf("expected default QA evidence dir .cleo/evidence, got %s", cfg.QAEvidenceDir())
+	}
 }
 
 func TestLoadRequiresRepoFields(t *testing.T) {

@@ -60,6 +60,7 @@ release:
 
 qa:
   actors_dir: ".cleo/qa/actors"
+  evidence_dir: ".cleo/evidence"
   default_actors:
     - "core"
   manual:

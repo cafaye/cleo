@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -52,6 +53,9 @@ func (a *Adapter) Start(source string, ref string, goals string, ac string) (int
 	s, err := a.store.StartSession(context.Background(), source, ref, goals, acText, a.now())
 	if err != nil {
 		return 0, err
+	}
+	if err := os.MkdirAll(a.sessionEvidenceDir(s.ID), 0o755); err != nil {
+		return 0, fmt.Errorf("create QA evidence dir: %w", err)
 	}
 	return s.ID, nil
 }
@@ -102,6 +106,7 @@ func (a *Adapter) Report(sessionID int64, publish string, ref string) (string, e
 	lines = append(lines, fmt.Sprintf("QA session %d", session.ID))
 	lines = append(lines, fmt.Sprintf("source=%s ref=%s verdict=%s", session.Source, session.Ref, emptyDefault(session.Verdict, "pending")))
 	lines = append(lines, fmt.Sprintf("goals=%s", session.Goals))
+	lines = append(lines, fmt.Sprintf("evidence_dir=%s", a.sessionEvidenceDir(session.ID)))
 	lines = append(lines, "")
 	if len(tasks) == 0 {
 		lines = append(lines, "No tasks logged.")
@@ -170,6 +175,7 @@ func (a *Adapter) Run(sessionID int64, mode string) (string, error) {
 	lines = append(lines, fmt.Sprintf("name=%s", emptyDefault(doc.Name, "unnamed")))
 	lines = append(lines, fmt.Sprintf("mode=%s", resolvedMode))
 	lines = append(lines, fmt.Sprintf("criteria=%d", len(doc.Criteria)))
+	lines = append(lines, fmt.Sprintf("evidence_dir=%s", a.sessionEvidenceDir(sessionID)))
 	lines = append(lines, "")
 	for _, criterion := range doc.Criteria {
 		lines = append(lines, fmt.Sprintf("criterion %s: %s", criterion.ID, criterion.Title))
@@ -346,6 +352,7 @@ func (a *Adapter) renderPRReportMarkdown(session taskstore.Session, doc qacontra
 	lines = append(lines, fmt.Sprintf("- Verdict: `%s`", emptyDefault(session.Verdict, "pending")))
 	lines = append(lines, fmt.Sprintf("- Source: `%s` `%s`", session.Source, session.Ref))
 	lines = append(lines, fmt.Sprintf("- Goals: %s", session.Goals))
+	lines = append(lines, fmt.Sprintf("- Evidence Dir: `%s`", a.sessionEvidenceDir(session.ID)))
 	lines = append(lines, "")
 	lines = append(lines, "#### BDD Results")
 	checked := len(tasks) == 0 && strings.TrimSpace(session.Verdict) == "pass"
@@ -373,6 +380,10 @@ func (a *Adapter) renderPRReportMarkdown(session taskstore.Session, doc qacontra
 		}
 	}
 	return strings.Join(lines, "\n")
+}
+
+func (a *Adapter) sessionEvidenceDir(sessionID int64) string {
+	return filepath.Join(a.cfg.QAEvidenceDir(), "qa", fmt.Sprintf("session-%d", sessionID))
 }
 
 func (a *Adapter) publishReportToPR(prRef, report string) error {
