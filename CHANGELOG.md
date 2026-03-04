@@ -24,6 +24,35 @@ All notable changes to this project will be documented in this file.
 
 - Add verification commands/results for unreleased work.
 
+## [v0.2.2]
+
+### Summary
+
+- Hardened QA bootstrap and setup ergonomics, and made default QA workflow packaging project-agnostic.
+
+### Highlights
+
+- Made packaged `qa.yml` reusable across non-Go repositories by removing hard Go toolchain assumptions and using released `cleo` binary installation.
+- Updated default QA workflow behavior to gate QA execution on non-QA check success and run via PR policy/AC markers.
+- Changed `cleo setup` to always preserve existing `cleo.yml` without overwrite prompts.
+- Extended QA kit bootstrap to provision default actor profile:
+  - `.cleo/qa/actors/core.yml` (created if missing, never overwritten).
+
+### Breaking Changes
+
+- None.
+
+### Migration Notes
+
+- Existing repositories can run `cleo qa init` (or `cleo setup`) to provision missing QA assets, including `core.yml`.
+- Existing custom actor/config files remain unchanged.
+
+### Verification
+
+- `go test ./internal/qacatalog -v`
+- `go test ./internal/setup -v`
+- `make quality`
+
 ## [v0.2.1]
 
 ### Summary
