@@ -23,6 +23,9 @@ func EnsureQAKit(root string) error {
 	if err := ensurePRTemplate(root); err != nil {
 		return err
 	}
+	if err := ensureDefaultCoreActor(root); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -64,6 +67,20 @@ func ensurePRTemplate(root string) error {
 	}
 	if err := os.WriteFile(path, []byte(strings.TrimSpace(body)+"\n"), 0o644); err != nil {
 		return fmt.Errorf("write PR template: %w", err)
+	}
+	return nil
+}
+
+func ensureDefaultCoreActor(root string) error {
+	path := filepath.Join(root, ".cleo", "qa", "actors", "core.yml")
+	if _, err := os.Stat(path); err == nil {
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("create actors dir: %w", err)
+	}
+	if err := os.WriteFile(path, []byte(defaultCoreActor), 0o644); err != nil {
+		return fmt.Errorf("write default core actor: %w", err)
 	}
 	return nil
 }
@@ -203,4 +220,12 @@ jobs:
           cleo qa finish --session "$sid" --verdict "$verdict"
           cleo qa report --session "$sid"
           exit "$run_status"
+`
+
+const defaultCoreActor = `name: core
+description: Default actor profile for core QA flows.
+surfaces:
+  - web
+  - api
+auth_profile: none
 `
