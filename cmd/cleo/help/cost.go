@@ -16,13 +16,14 @@ func PrintCost(out io.Writer) {
 	fmt.Fprintln(out, "  cleo cost estimate")
 	fmt.Fprintln(out, "  cleo cost estimate --path . --rates-source cached")
 	fmt.Fprintln(out, "  cleo cost estimate --rates-source live --country Kenya")
+	fmt.Fprintln(out, "  cleo cost estimate --format json")
 	fmt.Fprintln(out, "  cleo cost estimate --rates-source manual --hourly-rate 160")
 }
 
 func PrintCostCommand(out io.Writer, cmd string) bool {
 	switch cmd {
 	case "estimate":
-		fmt.Fprintln(out, "usage: cleo cost estimate [--path <dir>] [--rates-source <cached|manual|live>] [--country <name|ISO2>] [--hourly-rate <number>]")
+		fmt.Fprintln(out, "usage: cleo cost estimate [--path <dir>] [--rates-source <cached|manual|live>] [--country <name|ISO2>] [--format <markdown|plain|json>] [--hourly-rate <number>]")
 	default:
 		return false
 	}

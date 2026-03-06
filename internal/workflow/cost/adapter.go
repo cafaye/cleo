@@ -1,6 +1,7 @@
 package cost
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -95,6 +96,10 @@ func Estimate(args []string) (string, error) {
 	rateSource := flagValue(args, "--rates-source")
 	if rateSource == "" {
 		rateSource = "cached"
+	}
+	format := flagValue(args, "--format")
+	if format == "" {
+		format = "markdown"
 	}
 	resolvedRoot, err := filepath.Abs(root)
 	if err != nil {
@@ -222,7 +227,7 @@ func Estimate(args []string) (string, error) {
 		BaseHours:      baseHours,
 		TotalHours:     totalHours,
 	}
-	return render(e), nil
+	return render(e, format)
 }
 
 func resolveRates(source string, manual string, countryInput string) (rateTable, countryInfo, error) {
@@ -295,7 +300,18 @@ func isManifest(path string) bool {
 	}
 }
 
-func render(e estimate) string {
+func render(e estimate, format string) (string, error) {
+	switch format {
+	case "plain":
+		return renderPlain(e), nil
+	case "json":
+		return renderJSON(e)
+	default:
+		return renderMarkdown(e), nil
+	}
+}
+
+func renderMarkdown(e estimate) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# Cleo Cost Estimate\n\n")
 	fmt.Fprintf(&b, "Analysis Date: %s\n", e.Date)
@@ -308,39 +324,220 @@ func render(e estimate) string {
 	fmt.Fprintf(&b, "\n\n")
 
 	fmt.Fprintf(&b, "## Codebase Metrics\n")
-	fmt.Fprintf(&b, "- Total non-empty lines: %d\n", e.TotalLines)
-	fmt.Fprintf(&b, "- Code lines: %d\n", e.CodeLines)
-	fmt.Fprintf(&b, "- Test lines: %d\n", e.TestLines)
-	fmt.Fprintf(&b, "- Docs lines: %d\n", e.DocLines)
-	fmt.Fprintf(&b, "- Config lines: %d\n", e.ConfigLines)
-	fmt.Fprintf(&b, "- Complexity multiplier: %.2fx\n\n", e.Complexity)
+	fmt.Fprintf(&b, "%s\n\n", markdownTable(
+		[]string{"Metric", "Value"},
+		[][]string{
+			{"Total non-empty lines", fmt.Sprintf("%d", e.TotalLines)},
+			{"Code lines", fmt.Sprintf("%d", e.CodeLines)},
+			{"Test lines", fmt.Sprintf("%d", e.TestLines)},
+			{"Docs lines", fmt.Sprintf("%d", e.DocLines)},
+			{"Config lines", fmt.Sprintf("%d", e.ConfigLines)},
+			{"Complexity multiplier", fmt.Sprintf("%.2fx", e.Complexity)},
+		},
+		[]bool{false, true},
+	))
 
 	fmt.Fprintf(&b, "### Language Mix\n")
+	langRows := make([][]string, 0, len(e.Languages))
 	for i, lang := range e.Languages {
 		if i >= 10 {
 			break
 		}
-		fmt.Fprintf(&b, "- %s: %d lines across %d files\n", lang.Name, lang.Lines, lang.Files)
+		langRows = append(langRows, []string{lang.Name, fmt.Sprintf("%d", lang.Lines), fmt.Sprintf("%d", lang.Files)})
 	}
-	fmt.Fprintf(&b, "\n")
+	fmt.Fprintf(&b, "%s\n\n", markdownTable(
+		[]string{"Language", "Lines", "Files"},
+		langRows,
+		[]bool{false, true, true},
+	))
 
 	fmt.Fprintf(&b, "## Development Time\n")
-	fmt.Fprintf(&b, "- Base development hours: %.1f\n", e.BaseHours)
-	fmt.Fprintf(&b, "- Total estimated hours (with overhead): %.1f\n\n", e.TotalHours)
+	fmt.Fprintf(&b, "%s\n\n", markdownTable(
+		[]string{"Metric", "Hours"},
+		[][]string{
+			{"Base development hours", fmt.Sprintf("%.1f", e.BaseHours)},
+			{"Total estimated hours (with overhead)", fmt.Sprintf("%.1f", e.TotalHours)},
+		},
+		[]bool{false, true},
+	))
 
 	low := e.TotalHours * e.HourlyRateLow
 	avg := e.TotalHours * e.HourlyRateAvg
 	high := e.TotalHours * e.HourlyRateHigh
 
 	fmt.Fprintf(&b, "## Cost Estimate (Engineering Only)\n")
-	fmt.Fprintf(&b, "- Low (%.0f/hr): $%.0f\n", e.HourlyRateLow, low)
-	fmt.Fprintf(&b, "- Average (%.0f/hr): $%.0f\n", e.HourlyRateAvg, avg)
-	fmt.Fprintf(&b, "- High (%.0f/hr): $%.0f\n\n", e.HourlyRateHigh, high)
+	fmt.Fprintf(&b, "%s\n\n", markdownTable(
+		[]string{"Scenario", "Hourly Rate", "Total Cost"},
+		[][]string{
+			{"Low", fmt.Sprintf("$%.0f/hr", e.HourlyRateLow), fmt.Sprintf("$%.0f", low)},
+			{"Average", fmt.Sprintf("$%.0f/hr", e.HourlyRateAvg), fmt.Sprintf("$%.0f", avg)},
+			{"High", fmt.Sprintf("$%.0f/hr", e.HourlyRateHigh), fmt.Sprintf("$%.0f", high)},
+		},
+		[]bool{false, true, true},
+	))
 
 	fmt.Fprintf(&b, "## Team-Loaded Cost\n")
-	fmt.Fprintf(&b, "- Lean startup (1.45x): $%.0f\n", avg*1.45)
-	fmt.Fprintf(&b, "- Growth company (2.2x): $%.0f\n", avg*2.2)
-	fmt.Fprintf(&b, "- Enterprise (2.65x): $%.0f\n", avg*2.65)
+	fmt.Fprintf(&b, "%s\n", markdownTable(
+		[]string{"Company Type", "Multiplier", "Total Cost"},
+		[][]string{
+			{"Lean startup", "1.45x", fmt.Sprintf("$%.0f", avg*1.45)},
+			{"Growth company", "2.20x", fmt.Sprintf("$%.0f", avg*2.2)},
+			{"Enterprise", "2.65x", fmt.Sprintf("$%.0f", avg*2.65)},
+		},
+		[]bool{false, true, true},
+	))
 
 	return b.String()
+}
+
+func markdownTable(headers []string, rows [][]string, rightAlign []bool) string {
+	widths := make([]int, len(headers))
+	for i, h := range headers {
+		widths[i] = len(h)
+	}
+	for _, row := range rows {
+		for i := 0; i < len(headers) && i < len(row); i++ {
+			if len(row[i]) > widths[i] {
+				widths[i] = len(row[i])
+			}
+		}
+	}
+
+	var b strings.Builder
+	writeTableRow(&b, headers, widths, nil)
+	b.WriteString("\n")
+	writeTableSeparator(&b, widths, rightAlign)
+	for _, row := range rows {
+		b.WriteString("\n")
+		writeTableRow(&b, row, widths, rightAlign)
+	}
+	return b.String()
+}
+
+func writeTableRow(b *strings.Builder, row []string, widths []int, rightAlign []bool) {
+	b.WriteString("|")
+	for i := range widths {
+		val := ""
+		if i < len(row) {
+			val = row[i]
+		}
+		alignRight := i < len(rightAlign) && rightAlign[i]
+		if alignRight {
+			fmt.Fprintf(b, " %*s |", widths[i], val)
+		} else {
+			fmt.Fprintf(b, " %-*s |", widths[i], val)
+		}
+	}
+}
+
+func writeTableSeparator(b *strings.Builder, widths []int, rightAlign []bool) {
+	b.WriteString("|")
+	for i, w := range widths {
+		dashes := strings.Repeat("-", w+2)
+		alignRight := i < len(rightAlign) && rightAlign[i]
+		if alignRight {
+			dashes = dashes[:len(dashes)-1] + ":"
+		}
+		fmt.Fprintf(b, "%s|", dashes)
+	}
+}
+
+func renderPlain(e estimate) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "Cleo Cost Estimate\n")
+	fmt.Fprintf(&b, "Analysis Date: %s\n", e.Date)
+	fmt.Fprintf(&b, "Project Root: %s\n", e.Root)
+	fmt.Fprintf(&b, "Rates Source: %s\n", e.RatesSource)
+	fmt.Fprintf(&b, "Market Country: %s (%s)", e.Country, e.CountryCode)
+	if e.Currency != "" {
+		fmt.Fprintf(&b, " | Currency: %s", e.Currency)
+	}
+	fmt.Fprintf(&b, "\n\n")
+	fmt.Fprintf(&b, "Codebase Metrics\n")
+	fmt.Fprintf(&b, "  Total lines: %d\n", e.TotalLines)
+	fmt.Fprintf(&b, "  Code lines: %d\n", e.CodeLines)
+	fmt.Fprintf(&b, "  Test lines: %d\n", e.TestLines)
+	fmt.Fprintf(&b, "  Docs lines: %d\n", e.DocLines)
+	fmt.Fprintf(&b, "  Config lines: %d\n", e.ConfigLines)
+	fmt.Fprintf(&b, "  Complexity: %.2fx\n\n", e.Complexity)
+
+	fmt.Fprintf(&b, "Language Mix\n")
+	for i, lang := range e.Languages {
+		if i >= 10 {
+			break
+		}
+		fmt.Fprintf(&b, "  %s: %d lines across %d files\n", lang.Name, lang.Lines, lang.Files)
+	}
+	fmt.Fprintf(&b, "\n")
+
+	fmt.Fprintf(&b, "Development Time\n")
+	fmt.Fprintf(&b, "  Base hours: %.1f\n", e.BaseHours)
+	fmt.Fprintf(&b, "  Total hours: %.1f\n\n", e.TotalHours)
+
+	low := e.TotalHours * e.HourlyRateLow
+	avg := e.TotalHours * e.HourlyRateAvg
+	high := e.TotalHours * e.HourlyRateHigh
+
+	fmt.Fprintf(&b, "Cost Estimate (Engineering)\n")
+	fmt.Fprintf(&b, "  Low (%.0f/hr): $%.0f\n", e.HourlyRateLow, low)
+	fmt.Fprintf(&b, "  Average (%.0f/hr): $%.0f\n", e.HourlyRateAvg, avg)
+	fmt.Fprintf(&b, "  High (%.0f/hr): $%.0f\n\n", e.HourlyRateHigh, high)
+
+	fmt.Fprintf(&b, "Team-Loaded Cost\n")
+	fmt.Fprintf(&b, "  Lean startup (1.45x): $%.0f\n", avg*1.45)
+	fmt.Fprintf(&b, "  Growth company (2.2x): $%.0f\n", avg*2.2)
+	fmt.Fprintf(&b, "  Enterprise (2.65x): $%.0f\n", avg*2.65)
+	return b.String()
+}
+
+func renderJSON(e estimate) (string, error) {
+	low := e.TotalHours * e.HourlyRateLow
+	avg := e.TotalHours * e.HourlyRateAvg
+	high := e.TotalHours * e.HourlyRateHigh
+	payload := map[string]any{
+		"title":         "Cleo Cost Estimate",
+		"analysis_date": e.Date,
+		"project_root":  e.Root,
+		"rates": map[string]any{
+			"source": e.RatesSource,
+			"country": map[string]any{
+				"name":     e.Country,
+				"code":     e.CountryCode,
+				"currency": e.Currency,
+			},
+			"hourly": map[string]float64{
+				"low":     e.HourlyRateLow,
+				"average": e.HourlyRateAvg,
+				"high":    e.HourlyRateHigh,
+			},
+		},
+		"lines": map[string]int{
+			"total":  e.TotalLines,
+			"code":   e.CodeLines,
+			"tests":  e.TestLines,
+			"docs":   e.DocLines,
+			"config": e.ConfigLines,
+		},
+		"complexity_multiplier": e.Complexity,
+		"languages":             e.Languages,
+		"hours": map[string]float64{
+			"base":  e.BaseHours,
+			"total": e.TotalHours,
+		},
+		"cost_engineering": map[string]float64{
+			"low":     low,
+			"average": avg,
+			"high":    high,
+		},
+		"cost_team_loaded": map[string]float64{
+			"lean_startup":   avg * 1.45,
+			"growth_company": avg * 2.2,
+			"enterprise":     avg * 2.65,
+		},
+	}
+	b, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }

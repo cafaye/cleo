@@ -9,6 +9,10 @@ func BuildPlan(in Input) (Plan, error) {
 		if rateSource != "" && rateSource != "cached" && rateSource != "manual" && rateSource != "live" {
 			return Plan{}, fmt.Errorf("--rates-source must be cached|manual|live")
 		}
+		format := flagValue(in.Args, "--format")
+		if format != "" && format != "markdown" && format != "plain" && format != "json" {
+			return Plan{}, fmt.Errorf("--format must be markdown|plain|json")
+		}
 		if rateSource == "manual" && flagValue(in.Args, "--hourly-rate") == "" {
 			return Plan{}, fmt.Errorf("--hourly-rate is required when --rates-source manual")
 		}

@@ -208,6 +208,9 @@ cleo cost help
 cleo cost estimate
 cleo cost estimate --path . --rates-source cached
 cleo cost estimate --rates-source live --country Germany
+cleo cost estimate --format markdown
+cleo cost estimate --format plain
+cleo cost estimate --format json
 cleo cost estimate --rates-source manual --hourly-rate 160
 ```
 

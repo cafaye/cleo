@@ -24,6 +24,40 @@ All notable changes to this project will be documented in this file.
 
 - Add verification commands/results for unreleased work.
 
+## [v0.2.4]
+
+### Summary
+
+- Improved `cleo cost estimate` output formatting with aligned Markdown tables and added multi-format output controls.
+
+### Highlights
+
+- Added explicit output format selection for cost reports:
+  - `--format markdown|plain|json` (default: `markdown`)
+- Improved Markdown output readability:
+  - rendered key sections as tables
+  - aligned table columns for consistent terminal display regardless of content length
+  - preserved right-aligned numeric columns for scanability
+- Updated help and README examples to document output format usage.
+- Added/updated cost workflow tests for format behavior.
+
+### Breaking Changes
+
+- None.
+
+### Migration Notes
+
+- No migration required.
+- Existing usage remains valid:
+  - `cleo cost estimate` still defaults to Markdown output.
+
+### Verification
+
+- `go test ./internal/workflow/cost`
+- `go run ./cmd/cleo cost estimate --path . --format markdown`
+- `go run ./cmd/cleo cost estimate --path . --format plain`
+- `go run ./cmd/cleo cost estimate --path . --format json`
+
 ## [v0.2.3]
 
 ### Summary
